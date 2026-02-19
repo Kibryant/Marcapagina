@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Marcapágina 📚
 
-## Getting Started
+**Marcapágina** é um rastreador de hábitos de leitura focado em simplicidade, consistência e gamificação. Transforme sua leitura em uma jornada épica.
 
-First, run the development server:
+## 🚀 Principais Funcionalidades
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Registro de Leitura Inteligente**: Timer integrado para focar na leitura e registro rápido de páginas.
+- **Métricas de Performance**: Acompanhe seu ritmo (páginas/dia), streak (dias seguidos) e metas diárias.
+- **Gamificação**: Ganhe XP a cada página lida e suba de nível para desbloquear conquistas visuais.
+- **Insights & Recomendações**: Recomendações baseadas no seu ritmo e comportamento de leitura.
+- **Gestão de Acervo**: Organize seus livros em leitura, lidos e desejados.
+- **Backup & Exportação**: Seus dados são seus. Exporte todo o seu histórico em formato JSON a qualquer momento.
+- **Design Premium**: Interface moderna com suporte total a **Light** e **Dark Mode**.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠 Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: [Next.js 15+](https://nextjs.org) (App Router)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com)
+- **Backend/Auth**: [Supabase](https://supabase.com)
+- **Componentes**: [shadcn/ui](https://ui.shadcn.com)
+- **Tema**: [next-themes](https://github.com/pacocoursey/next-themes)
+- **Ícones**: [Lucide React](https://lucide.dev)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏁 Como Começar
 
-## Learn More
+### Pré-requisitos
 
-To learn more about Next.js, take a look at the following resources:
+- Node.js 20+
+- Conta no Supabase
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Instalação
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Clone o repositório
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Configure as variáveis de ambiente no `.env`:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
+   ```
+4. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+## 🔒 Privacidade
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Marcapágina permite perfis públicos, mas você tem controle total sobre o que deseja exibir através das configurações de privacidade.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+© 2026 Marcapágina.
