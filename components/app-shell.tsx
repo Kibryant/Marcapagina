@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Home, LogOut, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { ThemeToggle } from "./theme-toggle";
 
 interface AppShellProps {
@@ -18,6 +20,25 @@ export function AppShell({ children, hideNav = false }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const { setTheme } = useTheme();
+
+  // Sync theme from DB on mount
+  useEffect(() => {
+    const syncTheme = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("theme")
+        .eq("id", user.id)
+        .single();
+      if (profile?.theme && (profile.theme === "light" || profile.theme === "dark")) {
+        setTheme(profile.theme);
+      }
+    };
+    syncTheme();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

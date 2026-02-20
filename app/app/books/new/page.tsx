@@ -11,21 +11,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+type BookStatus = "reading" | "wishlist" | "next";
 
 export default function NewBookPage() {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [totalPages, setTotalPages] = useState<string>("");
+  const [status, setStatus] = useState<BookStatus>("reading");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const { toast } = useToast();
 
+  const needsPages = status === "reading";
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const pages = parseInt(totalPages);
-    if (isNaN(pages) || pages <= 0) {
+    const pages = totalPages ? parseInt(totalPages) : 0;
+
+    if (needsPages && (isNaN(pages) || pages <= 0)) {
       toast({
         title: "Erro",
         description: "O número total de páginas deve ser maior que 0.",
@@ -44,7 +51,7 @@ export default function NewBookPage() {
       author,
       total_pages: pages,
       current_page: 0,
-      status: "reading",
+      status,
     });
 
     if (error) {
@@ -74,7 +81,7 @@ export default function NewBookPage() {
 
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Novo Livro</h1>
-          <p className="text-muted-foreground">O que você vai ler agora?</p>
+          <p className="text-muted-foreground">Adicione um livro à sua estante.</p>
         </div>
 
         <Card>
@@ -99,15 +106,32 @@ export default function NewBookPage() {
                   onChange={(e) => setAuthor(e.target.value)}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="totalPages">Total de Páginas</Label>
+                <Label htmlFor="status">Onde fica na sua estante?</Label>
+                <Select value={status} onValueChange={(v: BookStatus) => setStatus(v)}>
+                  <SelectTrigger id="status" className="w-full">
+                    <SelectValue placeholder="Selecione um status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="reading">📖 Estou lendo agora</SelectItem>
+                    <SelectItem value="next">🔜 Vou ler em breve (Próximos)</SelectItem>
+                    <SelectItem value="wishlist">💜 Quero ler um dia (Lista de Desejos)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="totalPages">
+                  Total de Páginas {!needsPages && <span className="text-muted-foreground font-normal">(opcional)</span>}
+                </Label>
                 <Input
                   id="totalPages"
                   type="number"
                   placeholder="Ex: 96"
                   value={totalPages}
                   onChange={(e) => setTotalPages(e.target.value)}
-                  required
+                  required={needsPages}
                   min="1"
                 />
               </div>

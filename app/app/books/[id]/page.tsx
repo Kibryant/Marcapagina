@@ -88,6 +88,19 @@ export default function BookDetailsPage() {
     setSubmittingHighlight(false);
   };
 
+  const handleStartReading = async () => {
+    const { error } = await supabase.from("books").update({
+      status: "reading",
+    }).eq("id", id);
+
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Bora!", description: "Livro movido para 'Lendo'!", variant: "success" });
+      fetchData();
+    }
+  };
+
   const handleFinishBook = async () => {
     if (!book) return;
 
@@ -176,11 +189,27 @@ export default function BookDetailsPage() {
                     "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
                     book.status === "reading" && "bg-primary/10 text-primary",
                     book.status === "paused" && "bg-warning/10 text-warning",
-                    book.status === "finished" && "bg-success/10 text-success"
+                    book.status === "finished" && "bg-success/10 text-success",
+                    book.status === "wishlist" && "bg-purple-500/10 text-purple-500",
+                    book.status === "next" && "bg-sky-500/10 text-sky-500",
                   )}>
-                    {book.status === "reading" ? "Lendo" : book.status === "paused" ? "Pausado" : "Lido"}
+                    {book.status === "reading" ? "Lendo"
+                      : book.status === "paused" ? "Pausado"
+                        : book.status === "finished" ? "Finalizado"
+                          : book.status === "wishlist" ? "Lista de Desejos"
+                            : "Próximo"}
                   </div>
-                  {book.status !== "finished" && (
+                  {(book.status === "wishlist" || book.status === "next") && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs border-primary/50 text-primary hover:bg-primary/10 hover:text-primary"
+                      onClick={handleStartReading}
+                    >
+                      Começar a Ler
+                    </Button>
+                  )}
+                  {book.status !== "finished" && book.status !== "wishlist" && book.status !== "next" && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -193,17 +222,19 @@ export default function BookDetailsPage() {
                 </div>
               </div>
 
-              <div className="space-y-3 pt-6 p-6 rounded-2xl border bg-surface shadow-sm">
-                <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                  <span>Progresso da Leitura</span>
-                  <span className="text-foreground">{progress}%</span>
+              {(book.status === "reading" || book.status === "paused" || book.status === "finished") && (
+                <div className="space-y-3 pt-6 p-6 rounded-2xl border bg-surface shadow-sm">
+                  <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                    <span>Progresso da Leitura</span>
+                    <span className="text-foreground">{progress}%</span>
+                  </div>
+                  <ProgressBar className="h-6" value={progress} indicatorClassName={book.status === "finished" ? "bg-success" : "bg-primary"} />
+                  <div className="text-xs text-muted-foreground flex justify-between items-center">
+                    <span>Página {book.current_page}</span>
+                    <span>Total {book.total_pages} páginas</span>
+                  </div>
                 </div>
-                <ProgressBar className="h-6" value={progress} indicatorClassName={book.status === "finished" ? "bg-success" : "bg-primary"} />
-                <div className="text-xs text-muted-foreground flex justify-between items-center">
-                  <span>Página {book.current_page}</span>
-                  <span>Total {book.total_pages} páginas</span>
-                </div>
-              </div>
+              )}
             </section>
 
             {/* Sessions */}
