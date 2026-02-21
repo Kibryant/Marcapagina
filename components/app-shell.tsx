@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Home, LogOut, Settings } from "lucide-react";
+import { BookOpen, Home, LogOut, Settings, Target, History } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -49,6 +49,8 @@ export function AppShell({ children, hideNav = false }: AppShellProps) {
   const navItems = [
     { label: "Dashboard", href: "/app", icon: Home },
     { label: "Livros", href: "/app/books", icon: BookOpen },
+    { label: "Metas", href: "/app/goals", icon: Target },
+    { label: "Histórico", href: "/app/story", icon: History },
     { label: "Ajustes", href: "/app/settings", icon: Settings },
   ];
 
