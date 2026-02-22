@@ -13,6 +13,7 @@ import { ReadingTimer } from "@/components/reading-timer";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Book as BookType } from "@/lib/utils";
+import { LogReadingLoadingSkeleton } from "@/components/ui/skeletons";
 
 export default function LogPage() {
   const [books, setBooks] = useState<BookType[]>([]);
@@ -90,6 +91,8 @@ export default function LogPage() {
     router.push("/app");
     router.refresh();
   };
+
+  if (loading) return <LogReadingLoadingSkeleton />;
 
   return (
     <AppShell>

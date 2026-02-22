@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Book as BookType, ReadingSession, Highlight } from "@/lib/utils";
+import { BookDetailsLoadingSkeleton } from "@/components/ui/skeletons";
 
 export default function BookDetailsPage() {
   const { id } = useParams();
@@ -143,15 +144,7 @@ export default function BookDetailsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <AppShell>
-        <div className="flex items-center justify-center p-12">
-          <p className="text-muted-foreground animate-pulse">Carregando...</p>
-        </div>
-      </AppShell>
-    );
-  }
+  if (loading) return <BookDetailsLoadingSkeleton />;
 
   if (!book) {
     return (

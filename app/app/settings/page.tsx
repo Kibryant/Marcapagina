@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { ProfilePictureUpload } from "@/components/v4/profile-picture-upload";
 import { Profile, Book as BookType } from "@/lib/utils";
+import { SettingsLoadingSkeleton } from "@/components/ui/skeletons";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -148,15 +149,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <AppShell>
-        <div className="flex items-center justify-center p-12">
-          <p className="text-muted-foreground animate-pulse">Carregando...</p>
-        </div>
-      </AppShell>
-    );
-  }
+  if (loading) return <SettingsLoadingSkeleton />;
 
   return (
     <AppShell>
