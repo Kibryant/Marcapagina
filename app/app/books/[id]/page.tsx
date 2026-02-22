@@ -15,12 +15,13 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Book as BookType, ReadingSession, Highlight } from "@/lib/utils";
 
 export default function BookDetailsPage() {
   const { id } = useParams();
-  const [book, setBook] = useState<any>(null);
-  const [sessions, setSessions] = useState<any[]>([]);
-  const [highlights, setHighlights] = useState<any[]>([]);
+  const [book, setBook] = useState<BookType | null>(null);
+  const [sessions, setSessions] = useState<ReadingSession[]>([]);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [newHighlight, setNewHighlight] = useState("");
   const [highlightPage, setHighlightPage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -188,16 +189,14 @@ export default function BookDetailsPage() {
                   <div className={cn(
                     "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
                     book.status === "reading" && "bg-primary/10 text-primary",
-                    book.status === "paused" && "bg-warning/10 text-warning",
                     book.status === "finished" && "bg-success/10 text-success",
                     book.status === "wishlist" && "bg-purple-500/10 text-purple-500",
                     book.status === "next" && "bg-sky-500/10 text-sky-500",
                   )}>
                     {book.status === "reading" ? "Lendo"
-                      : book.status === "paused" ? "Pausado"
-                        : book.status === "finished" ? "Finalizado"
-                          : book.status === "wishlist" ? "Lista de Desejos"
-                            : "Próximo"}
+                      : book.status === "finished" ? "Finalizado"
+                        : book.status === "wishlist" ? "Lista de Desejos"
+                          : "Próximo"}
                   </div>
                   {(book.status === "wishlist" || book.status === "next") && (
                     <Button
@@ -222,7 +221,7 @@ export default function BookDetailsPage() {
                 </div>
               </div>
 
-              {(book.status === "reading" || book.status === "paused" || book.status === "finished") && (
+              {(book.status === "reading" || book.status === "finished") && (
                 <div className="space-y-3 pt-6 p-6 rounded-2xl border bg-surface shadow-sm">
                   <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-muted-foreground">
                     <span>Progresso da Leitura</span>

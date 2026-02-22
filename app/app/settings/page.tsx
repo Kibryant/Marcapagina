@@ -12,10 +12,11 @@ import { User, Book, Save, Target, Globe, Shield, Download, FileJson } from "luc
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { ProfilePictureUpload } from "@/components/v4/profile-picture-upload";
+import { Profile, Book as BookType } from "@/lib/utils";
 
 export default function SettingsPage() {
-  const [profile, setProfile] = useState<any>(null);
-  const [books, setBooks] = useState<any[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [books, setBooks] = useState<Pick<BookType, "id" | "title">[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -67,7 +68,7 @@ export default function SettingsPage() {
         display_name: profile.display_name,
         username: profile.username,
         favorite_book_id: profile.favorite_book_id,
-        goal_pages_per_day: parseInt(profile.goal_pages_per_day) || 0,
+        goal_pages_per_day: profile.goal_pages_per_day || 0,
         is_public: profile.is_public,
         theme: profile.theme,
       })
@@ -136,8 +137,12 @@ export default function SettingsPage() {
       URL.revokeObjectURL(url);
 
       toast({ title: "Sucesso", description: "Dados exportados com sucesso!", variant: "success" });
-    } catch (error: any) {
-      toast({ title: "Erro na exportação", description: error.message, variant: "destructive" });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast({ title: "Erro na exportação", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Erro na exportação", description: "Um erro desconhecido ocorreu", variant: "destructive" });
+      }
     } finally {
       setExporting(false);
     }
@@ -181,7 +186,7 @@ export default function SettingsPage() {
                   <Input
                     id="display_name"
                     value={profile?.display_name || ""}
-                    onChange={(e) => setProfile({ ...profile, display_name: e.target.value })}
+                    onChange={(e) => setProfile(prev => prev ? { ...prev, display_name: e.target.value } : null)}
                     placeholder="Seu nome"
                   />
                 </div>
@@ -190,7 +195,7 @@ export default function SettingsPage() {
                   <Input
                     id="username"
                     value={profile?.username || ""}
-                    onChange={(e) => setProfile({ ...profile, username: e.target.value })}
+                    onChange={(e) => setProfile(prev => prev ? { ...prev, username: e.target.value } : null)}
                     placeholder="Ex: arthur_leitor"
                   />
                   <p className="text-[11px] text-muted-foreground">3-20 caracteres, letras, números e underline.</p>
@@ -204,7 +209,7 @@ export default function SettingsPage() {
                     type="number"
                     min="0"
                     value={profile?.goal_pages_per_day || ""}
-                    onChange={(e) => setProfile({ ...profile, goal_pages_per_day: e.target.value })}
+                    onChange={(e) => setProfile(prev => prev ? { ...prev, goal_pages_per_day: e.target.value ? parseInt(e.target.value) : null } : null)}
                     placeholder="Ex: 20"
                   />
                   <p className="text-[11px] text-muted-foreground">Define quantas páginas você planeja ler por dia.</p>
@@ -226,7 +231,7 @@ export default function SettingsPage() {
                   id="favorite_book"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={profile?.favorite_book_id || ""}
-                  onChange={(e) => setProfile({ ...profile, favorite_book_id: e.target.value || null })}
+                  onChange={(e) => setProfile(prev => prev ? { ...prev, favorite_book_id: e.target.value || null } : null)}
                 >
                   <option value="">Selecione um livro...</option>
                   {books.map((book) => (
@@ -252,7 +257,7 @@ export default function SettingsPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setProfile({ ...profile, is_public: !profile.is_public })}
+                      onClick={() => setProfile(prev => prev ? { ...prev, is_public: !prev.is_public } : null)}
                       className={cn(
                         "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         profile?.is_public ? "bg-primary" : "bg-muted"
@@ -284,7 +289,7 @@ export default function SettingsPage() {
                   id="theme"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={profile?.theme || "system"}
-                  onChange={(e) => setProfile({ ...profile, theme: e.target.value })}
+                  onChange={(e) => setProfile(prev => prev ? { ...prev, theme: e.target.value as "light" | "dark" | "system" } : null)}
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>

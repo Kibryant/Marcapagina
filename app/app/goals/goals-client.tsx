@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
+import { Goal, calculateGoalsSuggestions } from "@/lib/utils";
 
 export function GoalsClient({
   currentPages,
@@ -19,8 +20,8 @@ export function GoalsClient({
 }: {
   currentPages: number,
   currentMonthPages: number,
-  goal: any,
-  suggestion: any
+  goal: Goal | null,
+  suggestion: ReturnType<typeof calculateGoalsSuggestions> | null
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -39,6 +40,12 @@ export function GoalsClient({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado." });
+      setIsApplying(false);
+      return;
+    }
+
+    if (!suggestion) {
+      toast({ title: "Erro", description: "Sugestão não encontrada." });
       setIsApplying(false);
       return;
     }
@@ -62,8 +69,10 @@ export function GoalsClient({
 
       toast({ title: "Sucesso!", description: "Suas metas foram atualizadas." });
       router.refresh(); // Reload to fetch fresh data
-    } catch (err: any) {
-      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast({ title: "Erro", description: err.message, variant: "destructive" });
+      }
     } finally {
       setIsApplying(false);
     }
@@ -102,8 +111,10 @@ export function GoalsClient({
 
       toast({ title: "Metas salvas", description: "Suas metas manuais foram registradas com sucesso." });
       router.refresh();
-    } catch (err: any) {
-      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast({ title: "Erro", description: err.message, variant: "destructive" });
+      }
     } finally {
       setIsSaving(false);
     }

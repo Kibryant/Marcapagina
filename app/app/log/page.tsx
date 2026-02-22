@@ -12,9 +12,10 @@ import { Minus, Plus, ChevronLeft, Book, Timer } from "lucide-react";
 import { ReadingTimer } from "@/components/reading-timer";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Book as BookType } from "@/lib/utils";
 
 export default function LogPage() {
-  const [books, setBooks] = useState<any[]>([]);
+  const [books, setBooks] = useState<BookType[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string>("");
   const [pagesRead, setPagesRead] = useState<number>(1);
   const [duration, setDuration] = useState<number>(0);
@@ -46,6 +47,11 @@ export default function LogPage() {
     setLoading(true);
 
     const book = books.find(b => b.id === selectedBookId);
+    if (!book) {
+      setLoading(false);
+      return;
+    }
+
     const newCurrentPage = Math.min(book.total_pages, book.current_page + pagesRead);
     const isFinished = newCurrentPage === book.total_pages;
 

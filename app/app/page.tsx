@@ -132,7 +132,7 @@ export default async function DashboardPage() {
                       author={book.author}
                       current_page={book.current_page}
                       total_pages={book.total_pages}
-                      status={book.status as any}
+                      status={book.status}
                     />
                   ))}
                 </div>

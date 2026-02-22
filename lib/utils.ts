@@ -1,25 +1,76 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-
 import { startOfMonth, subDays, differenceInDays, format, getDay, parseISO, isSameMonth, subMonths, endOfMonth } from "date-fns";
-
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export interface ReadingSession {
-  id?: string;
-  user_id?: string;
-  book_id?: string;
-  date: string; // YYYY-MM-DD
-  pages_read: number;
-  created_at?: string; // ISO string
-}
-
 export interface Book {
   id: string;
-  status: string; // "reading", "completed", "want_to_read"
+  user_id: string;
+  title: string;
+  author: string | null;
+  total_pages: number;
+  current_page: number;
+  status: "reading" | "wishlist" | "next" | "finished";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Goal {
+  id: string;
+  user_id: string;
+  daily_pages: number | null;
+  monthly_pages: number | null;
+  suggested_daily_pages: number | null;
+  suggested_monthly_pages: number | null;
+  suggested_reason: string | null;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Highlight {
+  id: string;
+  user_id: string;
+  book_id: string;
+  page: number | null;
+  content: string;
+  created_at: string;
+}
+
+export interface Profile {
+  id: string;
+  display_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  favorite_book_id: string | null;
+  locale: string;
+  timezone: string;
+  theme: "light" | "dark" | "system";
+  week_starts_on: number;
+  goal_pages_per_day: number | null;
+  created_at: string;
+  updated_at: string;
+  xp: number;
+  level: number;
+  is_public: boolean;
+  social_settings: {
+    show_streak: boolean;
+    show_total_pages: boolean;
+    show_favorite_book: boolean;
+  } | null;
+}
+
+export interface ReadingSession {
+  id: string;
+  user_id: string;
+  book_id: string;
+  date: string;
+  pages_read: number;
+  created_at: string;
+  duration_minutes: number;
 }
 
 // === GOALS LOGIC ===
@@ -162,7 +213,7 @@ export function generateStoryData(sessions: ReadingSession[], books: Book[]) {
   const uniqueDaysReadThisMonth = new Set(currentMonthSessions.map(s => s.date)).size;
 
   // 5. Finished books
-  const finishedBooksCount = books.filter(b => b.status === "completed").length;
+  const finishedBooksCount = books.filter(b => b.status === "finished").length;
 
   return {
     currentMonthPages,
