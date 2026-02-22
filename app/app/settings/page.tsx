@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { User, Book, Save, Target, Globe, Shield, Download, FileJson } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { ProfilePictureUpload } from "@/components/v4/profile-picture-upload";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<any>(null);
@@ -79,6 +80,21 @@ export default function SettingsPage() {
       toast({ title: "Sucesso", description: "Perfil atualizado!", variant: "success" });
     }
     setSaving(false);
+  };
+
+  const handleAvatarUpload = async (newUrl: string) => {
+    if (!profile) return;
+    setProfile({ ...profile, avatar_url: newUrl });
+
+    // Instantly update DB as well
+    const { error } = await supabase
+      .from("profiles")
+      .update({ avatar_url: newUrl })
+      .eq("id", profile.id);
+
+    if (error) {
+      toast({ title: "Erro", description: "Falha ao salvar a imagem no perfil.", variant: "destructive" });
+    }
   };
 
   const handleExportData = async () => {
@@ -153,39 +169,46 @@ export default function SettingsPage() {
               </CardTitle>
               <CardDescription>Como você aparece para os outros.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="display_name">Nome de Exibição</Label>
-                <Input
-                  id="display_name"
-                  value={profile?.display_name || ""}
-                  onChange={(e) => setProfile({ ...profile, display_name: e.target.value })}
-                  placeholder="Seu nome"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  value={profile?.username || ""}
-                  onChange={(e) => setProfile({ ...profile, username: e.target.value })}
-                  placeholder="Ex: arthur_leitor"
-                />
-                <p className="text-[11px] text-muted-foreground">3-20 caracteres, letras, números e underline.</p>
-              </div>
-              <div className="space-y-2 pt-2">
-                <Label htmlFor="goal_pages_per_day" className="flex items-center gap-2">
-                  <Target className="h-4 w-4 text-primary" /> Meta Diária (páginas)
-                </Label>
-                <Input
-                  id="goal_pages_per_day"
-                  type="number"
-                  min="0"
-                  value={profile?.goal_pages_per_day || ""}
-                  onChange={(e) => setProfile({ ...profile, goal_pages_per_day: e.target.value })}
-                  placeholder="Ex: 20"
-                />
-                <p className="text-[11px] text-muted-foreground">Define quantas páginas você planeja ler por dia.</p>
+            <CardContent className="space-y-6">
+              <ProfilePictureUpload
+                currentAvatarUrl={profile?.avatar_url || null}
+                displayName={profile?.display_name || profile?.username || null}
+                onUploadSuccess={handleAvatarUpload}
+              />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="display_name">Nome de Exibição</Label>
+                  <Input
+                    id="display_name"
+                    value={profile?.display_name || ""}
+                    onChange={(e) => setProfile({ ...profile, display_name: e.target.value })}
+                    placeholder="Seu nome"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    value={profile?.username || ""}
+                    onChange={(e) => setProfile({ ...profile, username: e.target.value })}
+                    placeholder="Ex: arthur_leitor"
+                  />
+                  <p className="text-[11px] text-muted-foreground">3-20 caracteres, letras, números e underline.</p>
+                </div>
+                <div className="space-y-2 pt-2">
+                  <Label htmlFor="goal_pages_per_day" className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-primary" /> Meta Diária (páginas)
+                  </Label>
+                  <Input
+                    id="goal_pages_per_day"
+                    type="number"
+                    min="0"
+                    value={profile?.goal_pages_per_day || ""}
+                    onChange={(e) => setProfile({ ...profile, goal_pages_per_day: e.target.value })}
+                    placeholder="Ex: 20"
+                  />
+                  <p className="text-[11px] text-muted-foreground">Define quantas páginas você planeja ler por dia.</p>
+                </div>
               </div>
             </CardContent>
           </Card>
