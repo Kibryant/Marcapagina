@@ -9,7 +9,16 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Marcapágina",
-  description: "",
+  description: "Acompanhe seu progresso, registre sessões com timer e descubra estatísticas surpreendentes sobre seu hábito de leitura.",
+  keywords: ["leitura", "timer", "estatísticas", "hábito", "leitura", "timer", "estatísticas", "hábito", "leitura", "timer", "estatísticas", "hábito"],
+  authors: [{ name: "Arthur" }],
+  openGraph: {
+    title: "Marcapágina",
+    description: "Acompanhe seu progresso, registre sessões com timer e descubra estatísticas surpreendentes sobre seu hábito de leitura.",
+    type: "website",
+    locale: "pt-BR",
+    siteName: "Marcapágina",
+  },
 };
 
 interface RootLayoutProps {
