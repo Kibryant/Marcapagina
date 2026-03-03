@@ -12,8 +12,8 @@ export default function Home() {
         <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-sky-500/20 rounded-full blur-[128px] opacity-50" />
       </div>
 
-      {/* Topbar */}
-      <header className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-xl">
+      {/* Topbar Desktop */}
+      <header className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-xl hidden md:block">
         <div className="container mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
           <div className="flex items-center gap-2 group cursor-pointer">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
@@ -23,14 +23,33 @@ export default function Home() {
               Marcapágina
             </span>
           </div>
+
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <Button variant="ghost" asChild className="hidden sm:inline-flex">
+            <Button variant="ghost" asChild className="hidden sm:inline-flex rounded-full">
               <Link href="/login">Entrar</Link>
             </Button>
             <Button asChild className="rounded-full px-6 shadow-lg shadow-primary/20">
               <Link href="/signup">Criar Conta</Link>
             </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Topbar Mobile */}
+      <header className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/50 backdrop-blur-2xl md:hidden transition-all duration-300">
+        <div className="container mx-auto flex h-16 items-center justify-between px-6">
+          <div className="flex items-center gap-2 group transition-opacity active:opacity-80">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-primary to-indigo-600 text-primary-foreground shadow-lg shadow-primary/20">
+              <BookOpen className="h-5 w-5" />
+            </div>
+            <span className="text-lg font-black tracking-tight text-foreground">
+              Marcapágina
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
           </div>
         </div>
       </header>
