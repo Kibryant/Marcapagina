@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { ChevronLeft, Trash2, Calendar, BookOpen, Quote } from "lucide-react";
+import { StarRating } from "@/components/star-rating";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ export default function BookDetailsPage() {
   const [highlightPage, setHighlightPage] = useState("");
   const [loading, setLoading] = useState(true);
   const [submittingHighlight, setSubmittingHighlight] = useState(false);
+  const [savingRating, setSavingRating] = useState(false);
 
   const supabase = createClient();
   const { toast } = useToast();
@@ -88,6 +90,20 @@ export default function BookDetailsPage() {
       fetchData();
     }
     setSubmittingHighlight(false);
+  };
+
+  const handleRating = async (rating: number) => {
+    if (!book || savingRating) return;
+    setSavingRating(true);
+    const newRating = book.rating === rating ? null : rating;
+    const { error } = await supabase.from("books").update({ rating: newRating }).eq("id", id);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      setBook({ ...book, rating: newRating });
+      toast({ title: newRating ? `${newRating} estrela${newRating > 1 ? "s" : ""}! ⭐` : "Avaliação removida", variant: "success" });
+    }
+    setSavingRating(false);
   };
 
   const handleStartReading = async () => {
@@ -174,9 +190,14 @@ export default function BookDetailsPage() {
             {/* Book Header */}
             <section className="space-y-4">
               <div className="flex justify-between items-start gap-4">
-                <div>
+                <div className="space-y-1.5">
                   <h1 className="text-3xl font-bold tracking-tight">{book.title}</h1>
                   <p className="text-muted-foreground text-lg">{book.author}</p>
+                  <StarRating
+                    value={book.rating}
+                    onChange={handleRating}
+                    size="md"
+                  />
                 </div>
                 <div className="flex flex-col items-end gap-2 shrink-0">
                   <div className={cn(

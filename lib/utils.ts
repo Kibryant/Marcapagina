@@ -14,6 +14,7 @@ export interface Book {
   total_pages: number;
   current_page: number;
   status: "reading" | "wishlist" | "next" | "finished";
+  rating: number | null;
   created_at: string;
   updated_at: string;
 }
