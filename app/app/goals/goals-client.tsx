@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { GoalCard } from "@/components/v4/goal-card";
-import { SuggestionCard } from "@/components/v4/suggestion-card";
+import { GoalCard } from "@/components/goal-card";
+import { SuggestionCard } from "@/components/suggestion-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

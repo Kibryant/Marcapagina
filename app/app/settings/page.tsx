@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { User, Book, Save, Target, Globe, Shield, Download, FileJson } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
-import { ProfilePictureUpload } from "@/components/v4/profile-picture-upload";
+import { ProfilePictureUpload } from "@/components/profile-picture-upload";
 import { Profile, Book as BookType } from "@/lib/utils";
 import { SettingsLoadingSkeleton } from "@/components/ui/skeletons";
 

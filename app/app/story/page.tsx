@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app-shell";
 import { generateStoryData, ReadingSession, Book } from "@/lib/utils";
-import { StoryCard } from "@/components/v4/story-card";
+import { StoryCard } from "@/components/story-card";
 import { Calendar, Clock, Trophy, Target, BookOpen } from "lucide-react";
 import { getStreak } from "@/lib/metrics";
 
