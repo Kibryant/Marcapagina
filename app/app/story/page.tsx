@@ -4,6 +4,7 @@ import { generateStoryData, ReadingSession, Book } from "@/lib/utils";
 import { StoryCard } from "@/components/story-card";
 import { Calendar, Clock, Trophy, Target, BookOpen } from "lucide-react";
 import { getStreak } from "@/lib/metrics";
+import { ReadingHeatmap } from "@/components/reading-heatmap";
 
 export default async function StoryPage() {
   const supabase = await createClient();
@@ -91,6 +92,10 @@ export default async function StoryPage() {
               description="Histórias concluídas com sucesso. Quantas vidas mais você quer viver dentro das páginas?"
               icon={<BookOpen className="h-4 w-4" />}
             />
+          </div>
+
+          <div className="md:col-span-2 lg:col-span-3 pt-4">
+            <ReadingHeatmap sessions={sessionList} />
           </div>
 
         </div>

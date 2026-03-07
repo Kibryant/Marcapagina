@@ -29,12 +29,16 @@ export default function BookDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [submittingHighlight, setSubmittingHighlight] = useState(false);
   const [savingRating, setSavingRating] = useState(false);
+  const [summary, setSummary] = useState("");
+  const [isEditingSummary, setIsEditingSummary] = useState(false);
+  const [savingSummary, setSavingSummary] = useState(false);
 
   const supabase = createClient();
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+
     const { data: bookData } = await supabase
       .from("books")
       .select("*")
@@ -59,11 +63,14 @@ export default function BookDetailsPage() {
         .order("created_at", { ascending: false });
 
       setHighlights(highlightsData || []);
+
+      setSummary(bookData.summary || "");
     }
     setLoading(false);
   }, [id, supabase]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 
@@ -104,6 +111,20 @@ export default function BookDetailsPage() {
       toast({ title: newRating ? `${newRating} estrela${newRating > 1 ? "s" : ""}! ⭐` : "Avaliação removida", variant: "success" });
     }
     setSavingRating(false);
+  };
+
+  const handleSaveSummary = async () => {
+    if (!book || savingSummary) return;
+    setSavingSummary(true);
+    const { error } = await supabase.from("books").update({ summary }).eq("id", id);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      setBook({ ...book, summary });
+      setIsEditingSummary(false);
+      toast({ title: "Sucesso", description: "Reflexão salva!", variant: "success" });
+    }
+    setSavingSummary(false);
   };
 
   const handleStartReading = async () => {
@@ -246,6 +267,69 @@ export default function BookDetailsPage() {
                     <span>Página {book.current_page}</span>
                     <span>Total {book.total_pages} páginas</span>
                   </div>
+                </div>
+              )}
+
+              {book.status === "finished" && (
+                <div className="space-y-4 pt-6 p-6 rounded-2xl border bg-surface shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Quote className="h-4 w-4 text-primary" /> O que eu aprendi
+                    </h2>
+
+                    {!isEditingSummary && summary && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-[10px] uppercase tracking-wider font-bold text-primary hover:text-primary hover:bg-primary/5"
+                        onClick={() => setIsEditingSummary(true)}
+                      >
+                        Editar
+                      </Button>
+                    )}
+                  </div>
+
+                  {isEditingSummary || !summary ? (
+                    <div className="space-y-4">
+                      <textarea
+                        className="w-full min-h-[150px] rounded-xl border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow resize-none"
+                        placeholder="Quais foram suas maiores reflexões e aprendizados com esta leitura?"
+                        value={summary}
+                        onChange={(e) => setSummary(e.target.value)}
+                      />
+                      <div className="flex justify-end gap-3">
+                        {summary && isEditingSummary && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="rounded-lg text-xs"
+                            onClick={() => {
+                              setSummary(book.summary || "");
+                              setIsEditingSummary(false);
+                            }}
+                            disabled={savingSummary}
+                          >
+                            Cancelar
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          className="rounded-lg px-6 shadow-lg shadow-primary/20 text-xs font-bold"
+                          onClick={handleSaveSummary}
+                          disabled={savingSummary || (!summary.trim() && !book.summary)}
+                        >
+                          {savingSummary ? "Salvando..." : "Salvar Reflexão"}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative group">
+                      <div className="absolute -left-2 top-0 bottom-0 w-1 bg-primary/20 rounded-full" />
+                      <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed pl-4 italic">
+                        {summary}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </section>
