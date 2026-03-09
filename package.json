@@ -6,10 +6,12 @@
     "packages/*"
   ],
   "scripts": {
-    "web:dev": "npm run dev -w apps/web",
-    "web:build": "npm run build -w apps/web",
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "web:dev": "turbo dev --filter=@marcapagina/web",
     "mobile:dev": "npm run start -w apps/mobile",
-    "shared:build": "npm run build -w packages/shared"
+    "shared:build": "turbo build --filter=@marcapagina/shared"
   },
   "devDependencies": {
     "@turbo/gen": "^2.8.14",
