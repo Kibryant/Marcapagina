@@ -1,5 +1,6 @@
 {
   "name": "marcapagina-monorepo",
+  "packageManager": "npm@11.5.1",
   "private": true,
   "workspaces": [
     "apps/*",
