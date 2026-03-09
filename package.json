@@ -12,6 +12,7 @@
     "shared:build": "npm run build -w packages/shared"
   },
   "devDependencies": {
+    "@turbo/gen": "^2.8.14",
     "turbo": "latest"
   }
 }
