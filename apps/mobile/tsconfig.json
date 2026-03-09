@@ -1,24 +1,12 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": ["expo/tsconfig.base", "./tsconfig.base.json"],
   "compilerOptions": {
-    "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@marcapagina/shared": [
-        "../../packages/shared"
-      ],
-      "@marcapagina/shared/*": [
-        "../../packages/shared/*"
-      ]
+      "@/*": ["./*"],
+      "@marcapagina/shared": ["../../packages/shared"],
+      "@marcapagina/shared/*": ["../../packages/shared/*"]
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }
