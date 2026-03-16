@@ -1,18 +1,32 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, Sparkles, ChevronLeft, ArrowRight, Mail } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  Eye,
+  EyeOff,
+  Mail,
+  Sparkles,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { createClient } from '@/lib/supabase/client';
 
 export default function SignupPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,13 +67,19 @@ export default function SignupPage() {
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-success mb-4 shadow-inner">
               <Sparkles className="h-8 w-8" />
             </div>
-            <CardTitle className="text-3xl font-black tracking-tighter text-success">Quase lá! 📚</CardTitle>
+            <CardTitle className="text-3xl font-black tracking-tighter text-success">
+              Quase lá! 📚
+            </CardTitle>
             <CardDescription className="text-sm font-medium mt-2">
-              Verifique seu e-mail para confirmar seu cadastro e começar sua jornada.
+              Verifique seu e-mail para confirmar seu cadastro e começar sua
+              jornada.
             </CardDescription>
           </CardHeader>
           <CardFooter className="pb-10">
-            <Button className="w-full h-12 rounded-xl font-bold bg-success hover:bg-success/90 text-white" onClick={() => router.push("/login")}>
+            <Button
+              className="w-full h-12 rounded-xl font-bold bg-success hover:bg-success/90 text-white"
+              onClick={() => router.push('/login')}
+            >
               Ir para o Login
             </Button>
           </CardFooter>
@@ -76,7 +96,11 @@ export default function SignupPage() {
 
       {/* Floating Back Button */}
       <div className="absolute top-8 left-8">
-        <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
+        <Button
+          variant="ghost"
+          asChild
+          className="text-muted-foreground hover:text-foreground"
+        >
           <Link href="/">
             <ChevronLeft className="mr-2 h-4 w-4" /> Voltar para o início
           </Link>
@@ -91,7 +115,9 @@ export default function SignupPage() {
             <Mail className="h-6 w-6" />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-3xl font-black tracking-tighter">Criar Conta</CardTitle>
+            <CardTitle className="text-3xl font-black tracking-tighter">
+              Criar Conta
+            </CardTitle>
             <CardDescription className="text-sm font-medium">
               Comece a organizar suas leituras hoje.
             </CardDescription>
@@ -101,7 +127,12 @@ export default function SignupPage() {
         <form onSubmit={handleSignup}>
           <CardContent className="grid gap-5">
             <div className="grid gap-2">
-              <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">E-mail</Label>
+              <Label
+                htmlFor="email"
+                className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1"
+              >
+                E-mail
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -113,11 +144,17 @@ export default function SignupPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password" title="password" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Senha</Label>
+              <Label
+                htmlFor="password"
+                title="password"
+                className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1"
+              >
+                Senha
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-background/50 border-border/50 rounded-xl h-12 pr-10 focus-visible:ring-success/20"
@@ -145,8 +182,14 @@ export default function SignupPage() {
           </CardContent>
 
           <CardFooter className="flex flex-col gap-6 pb-10">
-            <Button className="w-full h-12 text-base font-bold rounded-xl shadow-lg shadow-success/20 transition-all hover:shadow-success/30 bg-success hover:bg-success/90" type="submit" disabled={loading}>
-              {loading ? "Criando..." : (
+            <Button
+              className="w-full h-12 text-base font-bold rounded-xl shadow-lg shadow-success/20 transition-all hover:shadow-success/30 bg-success hover:bg-success/90"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                'Criando...'
+              ) : (
                 <span className="flex items-center gap-2">
                   Começar Jornada <ArrowRight className="h-4 w-4" />
                 </span>
@@ -155,8 +198,11 @@ export default function SignupPage() {
 
             <div className="flex flex-col items-center gap-2">
               <p className="text-xs text-center text-muted-foreground font-medium">
-                Já tem uma conta?{" "}
-                <Link href="/login" className="text-success font-bold hover:underline underline-offset-4">
+                Já tem uma conta?{' '}
+                <Link
+                  href="/login"
+                  className="text-success font-bold hover:underline underline-offset-4"
+                >
                   Fazer login
                 </Link>
               </p>

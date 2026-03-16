@@ -1,22 +1,22 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Minus, Plus, ChevronLeft, Book, Timer } from "lucide-react";
-import { ReadingTimer } from "@/components/reading-timer";
-import { cn, Book as BookType } from "@marcapagina/shared";
-import Link from "next/link";
-import { LogReadingLoadingSkeleton } from "@/components/ui/skeletons";
+import { type Book as BookType, cn } from '@marcapagina/shared';
+import { Book, ChevronLeft, Minus, Plus, Timer } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { AppShell } from '@/components/app-shell';
+import { ReadingTimer } from '@/components/reading-timer';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LogReadingLoadingSkeleton } from '@/components/ui/skeletons';
+import { createClient } from '@/lib/supabase/client';
 
 export default function LogPage() {
   const [books, setBooks] = useState<BookType[]>([]);
-  const [selectedBookId, setSelectedBookId] = useState<string>("");
+  const [selectedBookId, setSelectedBookId] = useState<string>('');
   const [pagesRead, setPagesRead] = useState<number>(1);
   const [duration, setDuration] = useState<number>(0);
   const [showTimer, setShowTimer] = useState(false);
@@ -26,13 +26,15 @@ export default function LogPage() {
 
   useEffect(() => {
     async function fetchBooks() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       const { data } = await supabase
-        .from("books")
-        .select("*")
-        .eq("user_id", user?.id)
-        .neq("status", "finished")
-        .order("title");
+        .from('books')
+        .select('*')
+        .eq('user_id', user?.id)
+        .neq('status', 'finished')
+        .order('title');
 
       if (data && data.length > 0) {
         setBooks(data);
@@ -46,48 +48,55 @@ export default function LogPage() {
     if (!selectedBookId) return;
     setLoading(true);
 
-    const book = books.find(b => b.id === selectedBookId);
+    const book = books.find((b) => b.id === selectedBookId);
     if (!book) {
       setLoading(false);
       return;
     }
 
-    const newCurrentPage = Math.min(book.total_pages, book.current_page + pagesRead);
+    const newCurrentPage = Math.min(
+      book.total_pages,
+      book.current_page + pagesRead
+    );
     const isFinished = newCurrentPage === book.total_pages;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     // 1. Create session
-    const { error: sessionError } = await supabase.from("reading_sessions").insert({
-      user_id: user?.id,
-      book_id: selectedBookId,
-      pages_read: pagesRead,
-      duration_minutes: duration,
-      date: new Date().toISOString().split('T')[0],
-    });
+    const { error: sessionError } = await supabase
+      .from('reading_sessions')
+      .insert({
+        user_id: user?.id,
+        book_id: selectedBookId,
+        pages_read: pagesRead,
+        duration_minutes: duration,
+        date: new Date().toISOString().split('T')[0],
+      });
 
     if (sessionError) {
-      alert("Erro ao salvar sessão: " + sessionError.message);
+      alert(`Erro ao salvar sessão: ${sessionError.message}`);
       setLoading(false);
       return;
     }
 
     // 2. Update book
     const { error: bookError } = await supabase
-      .from("books")
+      .from('books')
       .update({
         current_page: newCurrentPage,
-        status: isFinished ? "finished" : book.status,
+        status: isFinished ? 'finished' : book.status,
       })
-      .eq("id", selectedBookId);
+      .eq('id', selectedBookId);
 
     if (bookError) {
-      alert("Erro ao atualizar livro: " + bookError.message);
+      alert(`Erro ao atualizar livro: ${bookError.message}`);
       setLoading(false);
       return;
     }
 
-    router.push("/app");
+    router.push('/app');
     router.refresh();
   };
 
@@ -96,22 +105,31 @@ export default function LogPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <Link href="/app" className="flex items-center text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          href="/app"
+          className="flex items-center text-sm text-muted-foreground hover:text-foreground"
+        >
           <ChevronLeft className="h-4 w-4 mr-1" /> Voltar
         </Link>
 
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Registrar Leitura</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Registrar Leitura
+            </h1>
             <p className="text-muted-foreground">Quantas páginas você leu?</p>
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowTimer(!showTimer)}
-            className={cn("gap-2", showTimer && "bg-primary/10 text-primary border-primary")}
+            className={cn(
+              'gap-2',
+              showTimer && 'bg-primary/10 text-primary border-primary'
+            )}
           >
-            <Timer className="h-4 w-4" /> {showTimer ? "Fechar Timer" : "Usar Timer"}
+            <Timer className="h-4 w-4" />{' '}
+            {showTimer ? 'Fechar Timer' : 'Usar Timer'}
           </Button>
         </div>
 
@@ -135,10 +153,10 @@ export default function LogPage() {
                       key={book.id}
                       onClick={() => setSelectedBookId(book.id)}
                       className={cn(
-                        "flex items-center justify-between p-3 rounded-xl border text-left transition-colors",
+                        'flex items-center justify-between p-3 rounded-xl border text-left transition-colors',
                         selectedBookId === book.id
-                          ? "border-primary bg-primary/5 ring-1 ring-primary"
-                          : "border-border hover:bg-muted"
+                          ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                          : 'border-border hover:bg-muted'
                       )}
                     >
                       <div className="flex items-center gap-3">
@@ -147,7 +165,9 @@ export default function LogPage() {
                         </div>
                         <div>
                           <p className="font-medium text-sm">{book.title}</p>
-                          <p className="text-xs text-muted-foreground">pág {book.current_page} de {book.total_pages}</p>
+                          <p className="text-xs text-muted-foreground">
+                            pág {book.current_page} de {book.total_pages}
+                          </p>
                         </div>
                       </div>
                       {selectedBookId === book.id && (
@@ -157,12 +177,16 @@ export default function LogPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Nenhum livro em leitura encontrado.</p>
+                <p className="text-sm text-muted-foreground">
+                  Nenhum livro em leitura encontrado.
+                </p>
               )}
             </div>
 
             <div className="space-y-4 border-y py-6 border-dashed">
-              <Label className="block text-center text-sm text-muted-foreground uppercase tracking-wider font-semibold">Páginas lidas</Label>
+              <Label className="block text-center text-sm text-muted-foreground uppercase tracking-wider font-semibold">
+                Páginas lidas
+              </Label>
               <div className="flex items-center justify-center gap-6">
                 <Button
                   variant="outline"
@@ -189,13 +213,20 @@ export default function LogPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="duration" className="text-xs uppercase text-muted-foreground font-semibold">Duração (min)</Label>
+                <Label
+                  htmlFor="duration"
+                  className="text-xs uppercase text-muted-foreground font-semibold"
+                >
+                  Duração (min)
+                </Label>
                 <Input
                   id="duration"
                   type="number"
                   min="0"
                   value={duration}
-                  onChange={(e) => setDuration(parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    setDuration(parseInt(e.target.value, 10) || 0)
+                  }
                   className="text-center font-mono"
                 />
               </div>
@@ -211,7 +242,7 @@ export default function LogPage() {
               onClick={handleSave}
               disabled={loading || !selectedBookId}
             >
-              {loading ? "Salvando..." : "Finalizar Registro"}
+              {loading ? 'Salvando...' : 'Finalizar Registro'}
             </Button>
           </CardContent>
         </Card>
@@ -219,4 +250,3 @@ export default function LogPage() {
     </AppShell>
   );
 }
-

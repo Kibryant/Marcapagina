@@ -1,6 +1,6 @@
-import { AppShell } from "@/components/app-shell";
-import { Skeleton } from "@/components/ui/skeleton";
-import { BookCardSkeleton } from "@/components/ui/skeletons";
+import { AppShell } from '@/components/app-shell';
+import { Skeleton } from '@/components/ui/skeleton';
+import { BookCardSkeleton } from '@/components/ui/skeletons';
 
 export default function Loading() {
   return (

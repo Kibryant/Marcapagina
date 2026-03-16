@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from '@/components/app-shell';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function StatTileSkeleton() {
   return (
@@ -175,7 +175,7 @@ export function LogReadingLoadingSkeleton() {
         </div>
       </div>
     </AppShell>
-  )
+  );
 }
 
 export function BookDetailsLoadingSkeleton() {
@@ -239,7 +239,7 @@ export function BookDetailsLoadingSkeleton() {
         </div>
       </div>
     </AppShell>
-  )
+  );
 }
 
 export function StoryLoadingSkeleton() {

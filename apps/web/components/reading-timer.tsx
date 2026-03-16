@@ -1,9 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Play, Pause, Square, Timer as TimerIcon, RotateCcw, CloudRain, Coffee, Library, Volume2 } from "lucide-react";
-import { cn } from "@marcapagina/shared";
+import { cn } from '@marcapagina/shared';
+import {
+  CloudRain,
+  Coffee,
+  Library,
+  Pause,
+  Play,
+  RotateCcw,
+  Square,
+  Timer as TimerIcon,
+  Volume2,
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface ReadingTimerProps {
   onStop: (minutes: number) => void;
@@ -20,9 +30,10 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const sounds = {
-    rain: "https://actions.google.com/sounds/v1/water/rain_on_roof.ogg",
-    cafe: "https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg",
-    library: "https://actions.google.com/sounds/v1/ambiences/office_ambience.ogg",
+    rain: 'https://actions.google.com/sounds/v1/water/rain_on_roof.ogg',
+    cafe: 'https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg',
+    library:
+      'https://actions.google.com/sounds/v1/ambiences/office_ambience.ogg',
   };
 
   useEffect(() => {
@@ -42,7 +53,9 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
   useEffect(() => {
     if (audioRef.current) {
       if (isActive && currentSound) {
-        audioRef.current.play().catch(e => console.log("Audio play prevented:", e));
+        audioRef.current
+          .play()
+          .catch((e) => console.log('Audio play prevented:', e));
       } else {
         audioRef.current.pause();
       }
@@ -58,7 +71,7 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   const handleStart = () => setIsActive(true);
@@ -82,10 +95,17 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
   };
 
   return (
-    <div className={cn("flex flex-col items-center gap-4 rounded-xl border bg-surface p-6 shadow-sm", className)}>
+    <div
+      className={cn(
+        'flex flex-col items-center gap-4 rounded-xl border bg-surface p-6 shadow-sm',
+        className
+      )}
+    >
       <div className="flex items-center gap-2 text-primary">
         <TimerIcon className="h-5 w-5" />
-        <span className="text-sm font-semibold uppercase tracking-wider">Timer de Leitura</span>
+        <span className="text-sm font-semibold uppercase tracking-wider">
+          Timer de Leitura
+        </span>
       </div>
 
       <div className="text-5xl font-mono font-bold tracking-tighter tabular-nums selection:bg-transparent">
@@ -94,11 +114,21 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
 
       <div className="flex items-center gap-3">
         {!isActive ? (
-          <Button onClick={handleStart} variant="default" size="lg" className="h-12 w-12 rounded-full p-0">
+          <Button
+            onClick={handleStart}
+            variant="default"
+            size="lg"
+            className="h-12 w-12 rounded-full p-0"
+          >
             <Play className="h-6 w-6 fill-current" />
           </Button>
         ) : (
-          <Button onClick={handlePause} variant="outline" size="lg" className="h-12 w-12 rounded-full p-0 border-primary text-primary">
+          <Button
+            onClick={handlePause}
+            variant="outline"
+            size="lg"
+            className="h-12 w-12 rounded-full p-0 border-primary text-primary"
+          >
             <Pause className="h-6 w-6 fill-current" />
           </Button>
         )}
@@ -125,14 +155,17 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
 
       {seconds > 0 && !isActive && (
         <p className="text-xs text-muted-foreground animate-pulse">
-          Pausado. Clique no quadrado para salvar {Math.max(1, Math.round(seconds / 60))} min.
+          Pausado. Clique no quadrado para salvar{' '}
+          {Math.max(1, Math.round(seconds / 60))} min.
         </p>
       )}
 
       {/* Ambient Sounds UI */}
       <div className="w-full pt-6 mt-2 border-t border-dashed space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Ambiente</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Ambiente
+          </span>
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Volume2 className="h-3 w-3" />
             <input
@@ -149,49 +182,72 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
 
         <div className="grid grid-cols-3 gap-3">
           <button
-            onClick={() => toggleSound("rain")}
+            onClick={() => toggleSound('rain')}
             className={cn(
-              "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300",
-              currentSound === "rain"
-                ? "bg-primary/10 border-primary text-primary shadow-inner"
-                : "bg-surface hover:border-primary/30 text-muted-foreground"
+              'flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300',
+              currentSound === 'rain'
+                ? 'bg-primary/10 border-primary text-primary shadow-inner'
+                : 'bg-surface hover:border-primary/30 text-muted-foreground'
             )}
           >
-            <CloudRain className={cn("h-5 w-5", currentSound === "rain" && "animate-pulse")} />
-            <span className="text-[9px] font-bold uppercase tracking-tighter">Chuva</span>
+            <CloudRain
+              className={cn(
+                'h-5 w-5',
+                currentSound === 'rain' && 'animate-pulse'
+              )}
+            />
+            <span className="text-[9px] font-bold uppercase tracking-tighter">
+              Chuva
+            </span>
           </button>
 
           <button
-            onClick={() => toggleSound("cafe")}
+            onClick={() => toggleSound('cafe')}
             className={cn(
-              "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300",
-              currentSound === "cafe"
-                ? "bg-primary/10 border-primary text-primary shadow-inner"
-                : "bg-surface hover:border-primary/30 text-muted-foreground"
+              'flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300',
+              currentSound === 'cafe'
+                ? 'bg-primary/10 border-primary text-primary shadow-inner'
+                : 'bg-surface hover:border-primary/30 text-muted-foreground'
             )}
           >
-            <Coffee className={cn("h-5 w-5", currentSound === "cafe" && "animate-pulse")} />
-            <span className="text-[9px] font-bold uppercase tracking-tighter">Café</span>
+            <Coffee
+              className={cn(
+                'h-5 w-5',
+                currentSound === 'cafe' && 'animate-pulse'
+              )}
+            />
+            <span className="text-[9px] font-bold uppercase tracking-tighter">
+              Café
+            </span>
           </button>
 
           <button
-            onClick={() => toggleSound("library")}
+            onClick={() => toggleSound('library')}
             className={cn(
-              "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300",
-              currentSound === "library"
-                ? "bg-primary/10 border-primary text-primary shadow-inner"
-                : "bg-surface hover:border-primary/30 text-muted-foreground"
+              'flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300',
+              currentSound === 'library'
+                ? 'bg-primary/10 border-primary text-primary shadow-inner'
+                : 'bg-surface hover:border-primary/30 text-muted-foreground'
             )}
           >
-            <Library className={cn("h-5 w-5", currentSound === "library" && "animate-pulse")} />
-            <span className="text-[9px] font-bold uppercase tracking-tighter">Foco</span>
+            <Library
+              className={cn(
+                'h-5 w-5',
+                currentSound === 'library' && 'animate-pulse'
+              )}
+            />
+            <span className="text-[9px] font-bold uppercase tracking-tighter">
+              Foco
+            </span>
           </button>
         </div>
       </div>
 
       <audio
         ref={audioRef}
-        src={currentSound ? sounds[currentSound as keyof typeof sounds] : undefined}
+        src={
+          currentSound ? sounds[currentSound as keyof typeof sounds] : undefined
+        }
         loop
       />
     </div>

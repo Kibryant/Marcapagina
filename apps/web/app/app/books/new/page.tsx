@@ -1,51 +1,59 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
-import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { AppShell } from '@/components/app-shell';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/client';
 
-type BookStatus = "reading" | "wishlist" | "next";
+type BookStatus = 'reading' | 'wishlist' | 'next';
 
 export default function NewBookPage() {
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [totalPages, setTotalPages] = useState<string>("");
-  const [status, setStatus] = useState<BookStatus>("reading");
+  const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
+  const [totalPages, setTotalPages] = useState<string>('');
+  const [status, setStatus] = useState<BookStatus>('reading');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const { toast } = useToast();
 
-  const needsPages = status === "reading";
+  const needsPages = status === 'reading';
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const pages = totalPages ? parseInt(totalPages) : 0;
+    const pages = totalPages ? parseInt(totalPages, 10) : 0;
 
-    if (needsPages && (isNaN(pages) || pages <= 0)) {
+    if (needsPages && (Number.isNaN(pages) || pages <= 0)) {
       toast({
-        title: "Erro",
-        description: "O número total de páginas deve ser maior que 0.",
-        variant: "destructive",
+        title: 'Erro',
+        description: 'O número total de páginas deve ser maior que 0.',
+        variant: 'destructive',
       });
       return;
     }
 
     setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from("books").insert({
+    const { error } = await supabase.from('books').insert({
       user_id: user?.id,
       title,
       author,
@@ -56,18 +64,18 @@ export default function NewBookPage() {
 
     if (error) {
       toast({
-        title: "Erro",
+        title: 'Erro',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
       setLoading(false);
     } else {
       toast({
-        title: "Sucesso!",
-        description: "Livro adicionado com sucesso.",
-        variant: "success",
+        title: 'Sucesso!',
+        description: 'Livro adicionado com sucesso.',
+        variant: 'success',
       });
-      router.push("/app/books");
+      router.push('/app/books');
       router.refresh();
     }
   };
@@ -75,13 +83,18 @@ export default function NewBookPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <Link href="/app/books" className="flex items-center text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          href="/app/books"
+          className="flex items-center text-sm text-muted-foreground hover:text-foreground"
+        >
           <ChevronLeft className="h-4 w-4 mr-1" /> Voltar
         </Link>
 
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Novo Livro</h1>
-          <p className="text-muted-foreground">Adicione um livro à sua estante.</p>
+          <p className="text-muted-foreground">
+            Adicione um livro à sua estante.
+          </p>
         </div>
 
         <Card>
@@ -109,21 +122,35 @@ export default function NewBookPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="status">Onde fica na sua estante?</Label>
-                <Select value={status} onValueChange={(v: BookStatus) => setStatus(v)}>
+                <Select
+                  value={status}
+                  onValueChange={(v: BookStatus) => setStatus(v)}
+                >
                   <SelectTrigger id="status" className="w-full">
                     <SelectValue placeholder="Selecione um status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="reading">📖 Estou lendo agora</SelectItem>
-                    <SelectItem value="next">🔜 Vou ler em breve (Próximos)</SelectItem>
-                    <SelectItem value="wishlist">💜 Quero ler um dia (Lista de Desejos)</SelectItem>
+                    <SelectItem value="reading">
+                      📖 Estou lendo agora
+                    </SelectItem>
+                    <SelectItem value="next">
+                      🔜 Vou ler em breve (Próximos)
+                    </SelectItem>
+                    <SelectItem value="wishlist">
+                      💜 Quero ler um dia (Lista de Desejos)
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="totalPages">
-                  Total de Páginas {!needsPages && <span className="text-muted-foreground font-normal">(opcional)</span>}
+                  Total de Páginas{' '}
+                  {!needsPages && (
+                    <span className="text-muted-foreground font-normal">
+                      (opcional)
+                    </span>
+                  )}
                 </Label>
                 <Input
                   id="totalPages"
@@ -141,7 +168,7 @@ export default function NewBookPage() {
                 type="submit"
                 disabled={loading}
               >
-                {loading ? "Adicionando..." : "Adicionar Livro"}
+                {loading ? 'Adicionando...' : 'Adicionar Livro'}
               </Button>
             </CardContent>
           </form>

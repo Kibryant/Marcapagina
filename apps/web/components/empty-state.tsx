@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { LucideIcon } from "lucide-react";
-import Link from "next/link";
+import type { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -10,7 +10,13 @@ interface EmptyStateProps {
   actionHref?: string;
 }
 
-export function EmptyState({ icon: Icon, title, description, actionLabel, actionHref }: EmptyStateProps) {
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  actionLabel,
+  actionHref,
+}: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed rounded-xl bg-surface/30">
       <div className="p-3 bg-muted rounded-full mb-4">

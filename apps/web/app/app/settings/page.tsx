@@ -1,22 +1,37 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { AppShell } from "@/components/app-shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { User, Book, Save, Target, Globe, Shield, Download, FileJson } from "lucide-react";
-import { cn, Profile, Book as BookType } from "@marcapagina/shared";
-import { useTheme } from "next-themes";
-import { ProfilePictureUpload } from "@/components/profile-picture-upload";
-import { SettingsLoadingSkeleton } from "@/components/ui/skeletons";
+import { type Book as BookType, cn, type Profile } from '@marcapagina/shared';
+import {
+  Book,
+  Download,
+  FileJson,
+  Globe,
+  Save,
+  Shield,
+  Target,
+  User,
+} from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { useCallback, useEffect, useState } from 'react';
+import { AppShell } from '@/components/app-shell';
+import { ProfilePictureUpload } from '@/components/profile-picture-upload';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { SettingsLoadingSkeleton } from '@/components/ui/skeletons';
+import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/client';
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [books, setBooks] = useState<Pick<BookType, "id" | "title">[]>([]);
+  const [books, setBooks] = useState<Pick<BookType, 'id' | 'title'>[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -27,14 +42,16 @@ export default function SettingsPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (user) {
       // Fetch profile
       const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
         .single();
 
       setProfile(profileData);
@@ -44,9 +61,9 @@ export default function SettingsPage() {
 
       // Fetch books for "Favorite Book" select
       const { data: booksData } = await supabase
-        .from("books")
-        .select("id, title")
-        .order("title");
+        .from('books')
+        .select('id, title')
+        .order('title');
 
       setBooks(booksData || []);
     }
@@ -63,7 +80,7 @@ export default function SettingsPage() {
 
     setSaving(true);
     const { error } = await supabase
-      .from("profiles")
+      .from('profiles')
       .update({
         display_name: profile.display_name,
         username: profile.username,
@@ -72,13 +89,21 @@ export default function SettingsPage() {
         is_public: profile.is_public,
         theme: profile.theme,
       })
-      .eq("id", profile.id);
+      .eq('id', profile.id);
 
     if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
     } else {
       setTheme(profile.theme);
-      toast({ title: "Sucesso", description: "Perfil atualizado!", variant: "success" });
+      toast({
+        title: 'Sucesso',
+        description: 'Perfil atualizado!',
+        variant: 'success',
+      });
     }
     setSaving(false);
   };
@@ -89,32 +114,41 @@ export default function SettingsPage() {
 
     // Instantly update DB as well
     const { error } = await supabase
-      .from("profiles")
+      .from('profiles')
       .update({ avatar_url: newUrl })
-      .eq("id", profile.id);
+      .eq('id', profile.id);
 
     if (error) {
-      toast({ title: "Erro", description: "Falha ao salvar a imagem no perfil.", variant: "destructive" });
+      toast({
+        title: 'Erro',
+        description: 'Falha ao salvar a imagem no perfil.',
+        variant: 'destructive',
+      });
     }
   };
 
   const handleExportData = async () => {
     setExporting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
 
       // Fetch all user related data
       const [
         { data: profileData },
         { data: booksData },
         { data: sessionsData },
-        { data: followsData }
+        { data: followsData },
       ] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user.id).single(),
-        supabase.from("books").select("*").eq("user_id", user.id),
-        supabase.from("reading_sessions").select("*").eq("user_id", user.id),
-        supabase.from("follows").select("*").or(`follower_id.eq.${user.id},following_id.eq.${user.id}`)
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase.from('books').select('*').eq('user_id', user.id),
+        supabase.from('reading_sessions').select('*').eq('user_id', user.id),
+        supabase
+          .from('follows')
+          .select('*')
+          .or(`follower_id.eq.${user.id},following_id.eq.${user.id}`),
       ]);
 
       const exportData = {
@@ -123,12 +157,14 @@ export default function SettingsPage() {
         profile: profileData,
         books: booksData || [],
         reading_sessions: sessionsData || [],
-        follows: followsData || []
+        follows: followsData || [],
       };
 
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json',
+      });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
       link.download = `marcapagina-export-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
@@ -136,12 +172,24 @@ export default function SettingsPage() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast({ title: "Sucesso", description: "Dados exportados com sucesso!", variant: "success" });
+      toast({
+        title: 'Sucesso',
+        description: 'Dados exportados com sucesso!',
+        variant: 'success',
+      });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        toast({ title: "Erro na exportação", description: error.message, variant: "destructive" });
+        toast({
+          title: 'Erro na exportação',
+          description: error.message,
+          variant: 'destructive',
+        });
       } else {
-        toast({ title: "Erro na exportação", description: "Um erro desconhecido ocorreu", variant: "destructive" });
+        toast({
+          title: 'Erro na exportação',
+          description: 'Um erro desconhecido ocorreu',
+          variant: 'destructive',
+        });
       }
     } finally {
       setExporting(false);
@@ -155,7 +203,9 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Configurações</h1>
-          <p className="text-muted-foreground text-sm">Gerencie seu perfil e preferências.</p>
+          <p className="text-muted-foreground text-sm">
+            Gerencie seu perfil e preferências.
+          </p>
         </div>
 
         <form onSubmit={handleUpdateProfile} className="space-y-6">
@@ -164,7 +214,9 @@ export default function SettingsPage() {
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5 text-primary" /> Perfil
               </CardTitle>
-              <CardDescription>Como você aparece para os outros.</CardDescription>
+              <CardDescription>
+                Como você aparece para os outros.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <ProfilePictureUpload
@@ -177,8 +229,12 @@ export default function SettingsPage() {
                   <Label htmlFor="display_name">Nome de Exibição</Label>
                   <Input
                     id="display_name"
-                    value={profile?.display_name || ""}
-                    onChange={(e) => setProfile(prev => prev ? { ...prev, display_name: e.target.value } : null)}
+                    value={profile?.display_name || ''}
+                    onChange={(e) =>
+                      setProfile((prev) =>
+                        prev ? { ...prev, display_name: e.target.value } : null
+                      )
+                    }
                     placeholder="Seu nome"
                   />
                 </div>
@@ -186,25 +242,48 @@ export default function SettingsPage() {
                   <Label htmlFor="username">Username</Label>
                   <Input
                     id="username"
-                    value={profile?.username || ""}
-                    onChange={(e) => setProfile(prev => prev ? { ...prev, username: e.target.value } : null)}
+                    value={profile?.username || ''}
+                    onChange={(e) =>
+                      setProfile((prev) =>
+                        prev ? { ...prev, username: e.target.value } : null
+                      )
+                    }
                     placeholder="Ex: arthur_leitor"
                   />
-                  <p className="text-[11px] text-muted-foreground">3-20 caracteres, letras, números e underline.</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    3-20 caracteres, letras, números e underline.
+                  </p>
                 </div>
                 <div className="space-y-2 pt-2">
-                  <Label htmlFor="goal_pages_per_day" className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-primary" /> Meta Diária (páginas)
+                  <Label
+                    htmlFor="goal_pages_per_day"
+                    className="flex items-center gap-2"
+                  >
+                    <Target className="h-4 w-4 text-primary" /> Meta Diária
+                    (páginas)
                   </Label>
                   <Input
                     id="goal_pages_per_day"
                     type="number"
                     min="0"
-                    value={profile?.goal_pages_per_day || ""}
-                    onChange={(e) => setProfile(prev => prev ? { ...prev, goal_pages_per_day: e.target.value ? parseInt(e.target.value) : null } : null)}
+                    value={profile?.goal_pages_per_day || ''}
+                    onChange={(e) =>
+                      setProfile((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              goal_pages_per_day: e.target.value
+                                ? parseInt(e.target.value, 10)
+                                : null,
+                            }
+                          : null
+                      )
+                    }
                     placeholder="Ex: 20"
                   />
-                  <p className="text-[11px] text-muted-foreground">Define quantas páginas você planeja ler por dia.</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Define quantas páginas você planeja ler por dia.
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -222,43 +301,62 @@ export default function SettingsPage() {
                 <select
                   id="favorite_book"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={profile?.favorite_book_id || ""}
-                  onChange={(e) => setProfile(prev => prev ? { ...prev, favorite_book_id: e.target.value || null } : null)}
+                  value={profile?.favorite_book_id || ''}
+                  onChange={(e) =>
+                    setProfile((prev) =>
+                      prev
+                        ? { ...prev, favorite_book_id: e.target.value || null }
+                        : null
+                    )
+                  }
                 >
                   <option value="">Selecione um livro...</option>
                   {books.map((book) => (
-                    <option key={book.id} value={book.id}>{book.title}</option>
+                    <option key={book.id} value={book.id}>
+                      {book.title}
+                    </option>
                   ))}
                 </select>
               </div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Globe className="h-5 w-5 text-primary" /> Privacidade & Social
+                    <Globe className="h-5 w-5 text-primary" /> Privacidade &
+                    Social
                   </CardTitle>
-                  <CardDescription>Configure como outros usuários vêem você.</CardDescription>
+                  <CardDescription>
+                    Configure como outros usuários vêem você.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between p-4 rounded-xl border bg-muted/30">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <Shield className="h-4 w-4 text-primary" />
-                        <span className="font-bold text-sm">Perfil Público</span>
+                        <span className="font-bold text-sm">
+                          Perfil Público
+                        </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">Permite que outros vejam seu streak e livro favorito.</p>
+                      <p className="text-xs text-muted-foreground">
+                        Permite que outros vejam seu streak e livro favorito.
+                      </p>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setProfile(prev => prev ? { ...prev, is_public: !prev.is_public } : null)}
+                      onClick={() =>
+                        setProfile((prev) =>
+                          prev ? { ...prev, is_public: !prev.is_public } : null
+                        )
+                      }
                       className={cn(
-                        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                        profile?.is_public ? "bg-primary" : "bg-muted"
+                        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                        profile?.is_public ? 'bg-primary' : 'bg-muted'
                       )}
                     >
                       <span
                         className={cn(
-                          "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                          profile?.is_public ? "translate-x-6" : "translate-x-1"
+                          'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                          profile?.is_public ? 'translate-x-6' : 'translate-x-1'
                         )}
                       />
                     </button>
@@ -266,9 +364,14 @@ export default function SettingsPage() {
 
                   {profile?.is_public && (
                     <div className="p-3 rounded-lg bg-surface border border-dashed border-primary/30">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Seu link público:</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">
+                        Seu link público:
+                      </p>
                       <code className="text-[10px] text-primary break-all">
-                        {typeof window !== "undefined" ? window.location.origin : ""}/u/{profile.username}
+                        {typeof window !== 'undefined'
+                          ? window.location.origin
+                          : ''}
+                        /u/{profile.username}
                       </code>
                     </div>
                   )}
@@ -280,8 +383,20 @@ export default function SettingsPage() {
                 <select
                   id="theme"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={profile?.theme || "system"}
-                  onChange={(e) => setProfile(prev => prev ? { ...prev, theme: e.target.value as "light" | "dark" | "system" } : null)}
+                  value={profile?.theme || 'system'}
+                  onChange={(e) =>
+                    setProfile((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            theme: e.target.value as
+                              | 'light'
+                              | 'dark'
+                              | 'system',
+                          }
+                        : null
+                    )
+                  }
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>
@@ -294,15 +409,19 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileJson className="h-5 w-5 text-primary" /> Backup & Exportação
+                <FileJson className="h-5 w-5 text-primary" /> Backup &
+                Exportação
               </CardTitle>
-              <CardDescription>Baixe uma cópia de todos os seus dados para segurança.</CardDescription>
+              <CardDescription>
+                Baixe uma cópia de todos os seus dados para segurança.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="p-4 rounded-xl border bg-muted/30 space-y-4">
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Isso incluirá seu perfil, lista de livros, todas as suas sessões de leitura e conexões.
-                  O arquivo será baixado no formato JSON.
+                  Isso incluirá seu perfil, lista de livros, todas as suas
+                  sessões de leitura e conexões. O arquivo será baixado no
+                  formato JSON.
                 </p>
                 <Button
                   type="button"
@@ -312,14 +431,15 @@ export default function SettingsPage() {
                   disabled={exporting}
                 >
                   <Download className="h-4 w-4" />
-                  {exporting ? "Exportando..." : "Exportar Meus Dados (.json)"}
+                  {exporting ? 'Exportando...' : 'Exportar Meus Dados (.json)'}
                 </Button>
               </div>
             </CardContent>
           </Card>
 
           <Button type="submit" className="w-full gap-2" disabled={saving}>
-            <Save className="h-4 w-4" /> {saving ? "Salvando..." : "Salvar Alterações"}
+            <Save className="h-4 w-4" />{' '}
+            {saving ? 'Salvando...' : 'Salvar Alterações'}
           </Button>
         </form>
       </div>

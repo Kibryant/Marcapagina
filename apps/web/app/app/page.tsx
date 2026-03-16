@@ -1,47 +1,65 @@
-import { createClient } from "@/lib/supabase/server";
-import { AppShell } from "@/components/app-shell";
-import { StatTile } from "@/components/stat-tile";
-import { BookCard } from "@/components/book-card";
-import { EmptyState } from "@/components/empty-state";
-import { DailyGoal } from "@/components/daily-goal";
-import { MonthlyChart } from "@/components/monthly-chart";
-import { Button } from "@/components/ui/button";
-import { Plus, BookPlus, TrendingUp, Sun, Moon, Calendar, Sparkles, Lightbulb } from "lucide-react";
-import { getTodayPages, getMonthPages, getMonthPace, getStreak } from "@marcapagina/shared/metrics";
-import { getAllInsights } from "@/lib/insights";
-import { getHabitRecommendations, getBookRecommendations } from "@/lib/recommendations";
-import Link from "next/link";
-
-import { ProgressBar } from "@/components/ui/progress-bar";
+import {
+  getMonthPace,
+  getMonthPages,
+  getStreak,
+  getTodayPages,
+} from '@marcapagina/shared/metrics';
+import {
+  BookPlus,
+  Calendar,
+  Lightbulb,
+  Moon,
+  Plus,
+  Sparkles,
+  Sun,
+  TrendingUp,
+} from 'lucide-react';
+import Link from 'next/link';
+import { AppShell } from '@/components/app-shell';
+import { BookCard } from '@/components/book-card';
+import { DailyGoal } from '@/components/daily-goal';
+import { EmptyState } from '@/components/empty-state';
+import { MonthlyChart } from '@/components/monthly-chart';
+import { StatTile } from '@/components/stat-tile';
+import { Button } from '@/components/ui/button';
+import { ProgressBar } from '@/components/ui/progress-bar';
+import { getAllInsights } from '@/lib/insights';
+import {
+  getBookRecommendations,
+  getHabitRecommendations,
+} from '@/lib/recommendations';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
 
   // Fetch user
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Fetch profile
   const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user?.id)
+    .from('profiles')
+    .select('*')
+    .eq('id', user?.id)
     .single();
 
   // Fetch books
   const { data: books } = await supabase
-    .from("books")
-    .select("*")
-    .eq("user_id", user?.id)
-    .order("created_at", { ascending: false });
+    .from('books')
+    .select('*')
+    .eq('user_id', user?.id)
+    .order('created_at', { ascending: false });
 
   // Fetch sessions
   const { data: sessions } = await supabase
-    .from("reading_sessions")
-    .select("*")
-    .eq("user_id", user?.id)
-    .order("date", { ascending: false });
+    .from('reading_sessions')
+    .select('*')
+    .eq('user_id', user?.id)
+    .order('date', { ascending: false });
 
-  const activeBooks = books?.filter(b => b.status === "reading") || [];
+  const activeBooks = books?.filter((b) => b.status === 'reading') || [];
   const sessionList = sessions || [];
 
   // Metrics
@@ -68,19 +86,27 @@ export default async function DashboardPage() {
         {/* Header/Greeting - Full Width */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Oi, {profile?.display_name || "Leitor"}! 📚</h1>
-            <p className="text-muted-foreground text-sm">Pronto para mais um capítulo?</p>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Oi, {profile?.display_name || 'Leitor'}! 📚
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Pronto para mais um capítulo?
+            </p>
           </div>
 
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/20">
-              <span className="text-[10px] font-bold uppercase tracking-tighter">Nível</span>
+              <span className="text-[10px] font-bold uppercase tracking-tighter">
+                Nível
+              </span>
               <span className="text-lg font-black leading-none">{level}</span>
             </div>
             <div className="w-24 space-y-1">
               <div className="flex justify-between text-[8px] font-bold text-muted-foreground uppercase">
                 <span>XP</span>
-                <span>{xp % xpToNextLevel} / {xpToNextLevel}</span>
+                <span>
+                  {xp % xpToNextLevel} / {xpToNextLevel}
+                </span>
               </div>
               <ProgressBar value={xpProgress} className="h-1 bg-primary/10" />
             </div>
@@ -107,9 +133,14 @@ export default async function DashboardPage() {
             </div>
 
             {/* CTA */}
-            <Button asChild size="lg" className="h-14 w-full text-base font-semibold rounded-xl lg:h-12 lg:text-sm">
+            <Button
+              asChild
+              size="lg"
+              className="h-14 w-full text-base font-semibold rounded-xl lg:h-12 lg:text-sm"
+            >
               <Link href="/app/log">
-                <Plus className="mr-2 h-5 w-5 lg:h-4 lg:w-4" /> Registrar Leitura
+                <Plus className="mr-2 h-5 w-5 lg:h-4 lg:w-4" /> Registrar
+                Leitura
               </Link>
             </Button>
 
@@ -117,7 +148,10 @@ export default async function DashboardPage() {
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Lendo agora</h2>
-                <Link href="/app/books" className="text-sm text-primary font-medium hover:underline">
+                <Link
+                  href="/app/books"
+                  className="text-sm text-primary font-medium hover:underline"
+                >
                   Ver todos
                 </Link>
               </div>
@@ -155,40 +189,67 @@ export default async function DashboardPage() {
               <section className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Insights & Dicas</h2>
+                  <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                    Insights & Dicas
+                  </h2>
                 </div>
 
                 <div className="space-y-3">
                   {userInsights.slice(0, 2).map((insight, idx) => {
                     const Icon =
-                      insight.icon === "Moon" ? Moon :
-                        insight.icon === "Sun" ? Sun :
-                          insight.icon === "Calendar" ? Calendar :
-                            insight.icon === "TrendingUp" ? TrendingUp :
-                              Sparkles;
+                      insight.icon === 'Moon'
+                        ? Moon
+                        : insight.icon === 'Sun'
+                          ? Sun
+                          : insight.icon === 'Calendar'
+                            ? Calendar
+                            : insight.icon === 'TrendingUp'
+                              ? TrendingUp
+                              : Sparkles;
 
                     return (
-                      <div key={idx} className="rounded-2xl border bg-surface p-4 space-y-2 shadow-sm border-primary/20 bg-primary/2">
+                      <div
+                        key={idx}
+                        className="rounded-2xl border bg-surface p-4 space-y-2 shadow-sm border-primary/20 bg-primary/2"
+                      >
                         <div className="flex items-center gap-2 text-primary">
                           <Icon className="h-4 w-4" />
-                          <span className="text-xs font-bold uppercase tracking-wider">Insight</span>
+                          <span className="text-xs font-bold uppercase tracking-wider">
+                            Insight
+                          </span>
                         </div>
-                        <h3 className="font-bold text-sm leading-tight">{insight.title}</h3>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{insight.description}</p>
+                        <h3 className="font-bold text-sm leading-tight">
+                          {insight.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {insight.description}
+                        </p>
                       </div>
                     );
                   })}
 
                   {allRecs.slice(0, 2).map((rec, idx) => (
-                    <div key={idx} className="rounded-2xl border bg-surface p-4 space-y-2 shadow-sm border-success/20 bg-success/2">
+                    <div
+                      key={idx}
+                      className="rounded-2xl border bg-surface p-4 space-y-2 shadow-sm border-success/20 bg-success/2"
+                    >
                       <div className="flex items-center gap-2 text-success">
                         <Lightbulb className="h-4 w-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Dica</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">
+                          Dica
+                        </span>
                       </div>
-                      <h3 className="font-bold text-sm leading-tight">{rec.title}</h3>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{rec.description}</p>
+                      <h3 className="font-bold text-sm leading-tight">
+                        {rec.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {rec.description}
+                      </p>
                       {rec.actionLabel && (
-                        <Link href={rec.actionHref || "#"} className="text-xs font-bold text-success hover:underline inline-block pt-1">
+                        <Link
+                          href={rec.actionHref || '#'}
+                          className="text-xs font-bold text-success hover:underline inline-block pt-1"
+                        >
                           {rec.actionLabel} →
                         </Link>
                       )}
@@ -202,7 +263,9 @@ export default async function DashboardPage() {
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Mensal</h2>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Págs / Dia</div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                  Págs / Dia
+                </div>
               </div>
               <div className="rounded-2xl border bg-surface p-4 shadow-sm overflow-hidden">
                 <div className="-mx-2">

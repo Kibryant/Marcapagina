@@ -1,18 +1,25 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, BookOpen, ChevronLeft, ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpen, ChevronLeft, Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,10 +37,14 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError(error.message === "Invalid login credentials" ? "E-mail ou senha incorretos." : error.message);
+      setError(
+        error.message === 'Invalid login credentials'
+          ? 'E-mail ou senha incorretos.'
+          : error.message
+      );
       setLoading(false);
     } else {
-      router.push("/app");
+      router.push('/app');
       router.refresh();
     }
   };
@@ -46,7 +57,11 @@ export default function LoginPage() {
 
       {/* Floating Back Button */}
       <div className="absolute top-8 left-8">
-        <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
+        <Button
+          variant="ghost"
+          asChild
+          className="text-muted-foreground hover:text-foreground"
+        >
           <Link href="/">
             <ChevronLeft className="mr-2 h-4 w-4" /> Voltar para o início
           </Link>
@@ -61,7 +76,9 @@ export default function LoginPage() {
             <BookOpen className="h-6 w-6" />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-3xl font-black tracking-tighter">Entrar</CardTitle>
+            <CardTitle className="text-3xl font-black tracking-tighter">
+              Entrar
+            </CardTitle>
             <CardDescription className="text-sm font-medium">
               Bem-vindo de volta! Continue sua leitura.
             </CardDescription>
@@ -71,7 +88,12 @@ export default function LoginPage() {
         <form onSubmit={handleLogin}>
           <CardContent className="grid gap-5">
             <div className="grid gap-2">
-              <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">E-mail</Label>
+              <Label
+                htmlFor="email"
+                className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1"
+              >
+                E-mail
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -83,11 +105,17 @@ export default function LoginPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password" title="password" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Senha</Label>
+              <Label
+                htmlFor="password"
+                title="password"
+                className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1"
+              >
+                Senha
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-background/50 border-border/50 rounded-xl h-12 pr-10 focus-visible:ring-primary/20"
@@ -115,8 +143,14 @@ export default function LoginPage() {
           </CardContent>
 
           <CardFooter className="flex flex-col gap-6 pb-10">
-            <Button className="w-full h-12 text-base font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30" type="submit" disabled={loading}>
-              {loading ? "Entrando..." : (
+            <Button
+              className="w-full h-12 text-base font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                'Entrando...'
+              ) : (
                 <span className="flex items-center gap-2">
                   Entrar no Sistema <ArrowRight className="h-4 w-4" />
                 </span>
@@ -125,8 +159,11 @@ export default function LoginPage() {
 
             <div className="flex flex-col items-center gap-2">
               <p className="text-xs text-center text-muted-foreground font-medium">
-                Novo por aqui?{" "}
-                <Link href="/signup" className="text-primary font-bold hover:underline underline-offset-4">
+                Novo por aqui?{' '}
+                <Link
+                  href="/signup"
+                  className="text-primary font-bold hover:underline underline-offset-4"
+                >
                   Criar conta agora
                 </Link>
               </p>

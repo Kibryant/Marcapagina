@@ -1,30 +1,30 @@
-import * as React from "react"
-import * as ProgressPrimitive from "@radix-ui/react-progress"
-import { cn } from "@marcapagina/shared"
+import { cn } from '@marcapagina/shared';
+import * as ProgressPrimitive from '@radix-ui/react-progress';
+import * as React from 'react';
 
 const ProgressBar = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
-    indicatorClassName?: string
+    indicatorClassName?: string;
   }
 >(({ className, value, indicatorClassName, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
-      "relative h-2 w-full overflow-hidden rounded-full bg-border",
+      'relative h-2 w-full overflow-hidden rounded-full bg-border',
       className
     )}
     {...props}
   >
     <ProgressPrimitive.Indicator
       className={cn(
-        "h-full w-full flex-1 bg-primary transition-all",
+        'h-full w-full flex-1 bg-primary transition-all',
         indicatorClassName
       )}
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
   </ProgressPrimitive.Root>
-))
-ProgressBar.displayName = ProgressPrimitive.Root.displayName
+));
+ProgressBar.displayName = ProgressPrimitive.Root.displayName;
 
-export { ProgressBar }
+export { ProgressBar };

@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from '@/components/ui/card';
 
 interface StatTileProps {
   label: string;
@@ -17,9 +17,7 @@ export function StatTile({ label, value, subtext }: StatTileProps) {
           {value}
         </span>
         {subtext && (
-          <span className="text-xs text-muted-foreground mt-1">
-            {subtext}
-          </span>
+          <span className="text-xs text-muted-foreground mt-1">{subtext}</span>
         )}
       </CardContent>
     </Card>

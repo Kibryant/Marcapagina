@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { BookX, ArrowLeft } from "lucide-react"
+import { ArrowLeft, BookX } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
   return (
@@ -17,10 +17,15 @@ export default function NotFound() {
       </h1>
 
       <p className="text-muted-foreground max-w-md mb-10 leading-relaxed">
-        Parece que este capítulo ainda não foi escrito ou a página se perdeu na biblioteca.
+        Parece que este capítulo ainda não foi escrito ou a página se perdeu na
+        biblioteca.
       </p>
 
-      <Button asChild size="lg" className="rounded-full px-8 gap-2 shadow-lg shadow-primary/20">
+      <Button
+        asChild
+        size="lg"
+        className="rounded-full px-8 gap-2 shadow-lg shadow-primary/20"
+      >
         <Link href="/">
           <ArrowLeft className="h-5 w-5" /> Voltar ao Início
         </Link>
@@ -30,5 +35,5 @@ export default function NotFound() {
         Erro 404 • Marcapágina
       </p>
     </div>
-  )
+  );
 }

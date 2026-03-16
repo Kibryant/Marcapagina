@@ -1,5 +1,5 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from '@supabase/ssr';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -36,17 +36,17 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protect /app routes
-  if (request.nextUrl.pathname.startsWith("/app") && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (request.nextUrl.pathname.startsWith('/app') && !user) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Redirect /login and /signup to /app if already logged in
   if (
-    (request.nextUrl.pathname === "/login" ||
-      request.nextUrl.pathname === "/signup") &&
+    (request.nextUrl.pathname === '/login' ||
+      request.nextUrl.pathname === '/signup') &&
     user
   ) {
-    return NextResponse.redirect(new URL("/app", request.url));
+    return NextResponse.redirect(new URL('/app', request.url));
   }
 
   return response;
@@ -61,6 +61,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

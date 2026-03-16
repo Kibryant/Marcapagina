@@ -1,9 +1,19 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { startOfMonth, subDays, differenceInDays, format, getDay, parseISO, isSameMonth, subMonths, endOfMonth } from "date-fns";
+import { type ClassValue, clsx } from 'clsx';
+import {
+  differenceInDays,
+  endOfMonth,
+  format,
+  getDay,
+  isSameMonth,
+  parseISO,
+  startOfMonth,
+  subDays,
+  subMonths,
+} from 'date-fns';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export interface Book {
@@ -13,7 +23,7 @@ export interface Book {
   author: string | null;
   total_pages: number;
   current_page: number;
-  status: "reading" | "wishlist" | "next" | "finished";
+  status: 'reading' | 'wishlist' | 'next' | 'finished';
   rating: number | null;
   summary: string | null;
   created_at: string;
@@ -50,7 +60,7 @@ export interface Profile {
   favorite_book_id: string | null;
   locale: string;
   timezone: string;
-  theme: "light" | "dark" | "system";
+  theme: 'light' | 'dark' | 'system';
   week_starts_on: number;
   goal_pages_per_day: number | null;
   created_at: string;
@@ -77,7 +87,10 @@ export interface ReadingSession {
 
 // === GOALS LOGIC ===
 
-export function calculateGoalsSuggestions(sessions: ReadingSession[], currentMonthPages: number) {
+export function calculateGoalsSuggestions(
+  sessions: ReadingSession[],
+  currentMonthPages: number
+) {
   const today = new Date();
 
   // Calculate stats for the last 14 days
@@ -86,11 +99,11 @@ export function calculateGoalsSuggestions(sessions: ReadingSession[], currentMon
 
   for (let i = 0; i < 14; i++) {
     const targetDate = subDays(today, i);
-    const dateStr = format(targetDate, "yyyy-MM-dd");
+    const dateStr = format(targetDate, 'yyyy-MM-dd');
 
     // Sum pages read on this day
     const pagesOnDay = sessions
-      .filter(s => s.date === dateStr)
+      .filter((s) => s.date === dateStr)
       .reduce((sum, s) => sum + s.pages_read, 0);
 
     totalPages14Days += pagesOnDay;
@@ -102,25 +115,26 @@ export function calculateGoalsSuggestions(sessions: ReadingSession[], currentMon
   const average14Days = totalPages14Days / 14;
 
   let suggestedDaily = 0;
-  let reason = "";
+  let reason = '';
 
   if (consistentDays14Days >= 8) {
     suggestedDaily = Math.ceil(average14Days * 1.15);
-    reason = "Ritmo forte! Aumentamos 15% para te desafiar.";
+    reason = 'Ritmo forte! Aumentamos 15% para te desafiar.';
   } else if (consistentDays14Days >= 4) {
     suggestedDaily = Math.ceil(average14Days * 1.05);
-    reason = "Boa consistência. Um leve aumento de 5% para crescer.";
+    reason = 'Boa consistência. Um leve aumento de 5% para crescer.';
   } else {
     suggestedDaily = Math.max(3, Math.ceil(average14Days));
-    reason = "Vamos retomar o hábito com uma meta mais realista.";
+    reason = 'Vamos retomar o hábito com uma meta mais realista.';
   }
 
   // Monthly suggestion
-  const daysInMonth = differenceInDays(endOfMonth(today), startOfMonth(today)) + 1;
+  const daysInMonth =
+    differenceInDays(endOfMonth(today), startOfMonth(today)) + 1;
   const daysPassed = today.getDate();
   const daysRemaining = daysInMonth - daysPassed + 1; // including today
 
-  let suggestedMonthly = currentMonthPages + (suggestedDaily * daysRemaining);
+  let suggestedMonthly = currentMonthPages + suggestedDaily * daysRemaining;
 
   // Fallback clamping: assume an upper limit to avoid crazy numbers
   const maxProjected = Math.max(30, average14Days * 30 * 1.5);
@@ -133,10 +147,9 @@ export function calculateGoalsSuggestions(sessions: ReadingSession[], currentMon
     suggestedMonthly,
     reason,
     consistency: consistentDays14Days,
-    average: Number(average14Days.toFixed(1))
+    average: Number(average14Days.toFixed(1)),
   };
 }
-
 
 // === STORY / NARRATIVE LOGIC ===
 
@@ -146,50 +159,71 @@ export function generateStoryData(sessions: ReadingSession[], books: Book[]) {
   const lastMonthStart = startOfMonth(subMonths(today, 1));
 
   // 1. Pages this month vs last month
-  const currentMonthSessions = sessions.filter(s => {
+  const currentMonthSessions = sessions.filter((s) => {
     try {
       const d = parseISO(s.date);
       return isSameMonth(d, currentMonthStart);
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   });
 
-  const currentMonthPages = currentMonthSessions.reduce((sum, s) => sum + s.pages_read, 0);
+  const currentMonthPages = currentMonthSessions.reduce(
+    (sum, s) => sum + s.pages_read,
+    0
+  );
 
-  const lastMonthSessions = sessions.filter(s => {
+  const lastMonthSessions = sessions.filter((s) => {
     try {
       const d = parseISO(s.date);
       return isSameMonth(d, lastMonthStart);
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   });
 
-  const lastMonthPages = lastMonthSessions.reduce((sum, s) => sum + s.pages_read, 0);
+  const lastMonthPages = lastMonthSessions.reduce(
+    (sum, s) => sum + s.pages_read,
+    0
+  );
 
   let monthComparisonPercent = 0;
   if (lastMonthPages > 0) {
-    monthComparisonPercent = Math.round(((currentMonthPages - lastMonthPages) / lastMonthPages) * 100);
+    monthComparisonPercent = Math.round(
+      ((currentMonthPages - lastMonthPages) / lastMonthPages) * 100
+    );
   }
 
   // 2. Best day of week (0 = Sunday, 1 = Monday ...)
   const dayOfWeekCounts = [0, 0, 0, 0, 0, 0, 0];
-  sessions.forEach(s => {
+  sessions.forEach((s) => {
     try {
       const d = parseISO(s.date);
       dayOfWeekCounts[getDay(d)] += s.pages_read;
-    } catch { }
+    } catch {}
   });
 
   const maxDayValue = Math.max(...dayOfWeekCounts);
-  const bestDayIndex = maxDayValue > 0 ? dayOfWeekCounts.indexOf(maxDayValue) : -1;
-  const dayNames = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
-  const bestDayName = bestDayIndex >= 0 ? dayNames[bestDayIndex] : "nenhum";
+  const bestDayIndex =
+    maxDayValue > 0 ? dayOfWeekCounts.indexOf(maxDayValue) : -1;
+  const dayNames = [
+    'domingo',
+    'segunda-feira',
+    'terça-feira',
+    'quarta-feira',
+    'quinta-feira',
+    'sexta-feira',
+    'sábado',
+  ];
+  const bestDayName = bestDayIndex >= 0 ? dayNames[bestDayIndex] : 'nenhum';
 
   // 3. Strongest Hour (00-05, 06-11, 12-17, 18-23)
   let madrugada = 0; // 0-5
-  let manha = 0;     // 6-11
-  let tarde = 0;     // 12-17
-  let noite = 0;     // 18-23
+  let manha = 0; // 6-11
+  let tarde = 0; // 12-17
+  let noite = 0; // 18-23
 
-  sessions.forEach(s => {
+  sessions.forEach((s) => {
     if (s.created_at) {
       const dbDate = new Date(s.created_at);
       const h = dbDate.getHours(); // Local timezone used
@@ -201,21 +235,26 @@ export function generateStoryData(sessions: ReadingSession[], books: Book[]) {
   });
 
   const timePeriods = [
-    { name: "madrugada", val: madrugada },
-    { name: "manhã", val: manha },
-    { name: "tarde", val: tarde },
-    { name: "noite", val: noite },
+    { name: 'madrugada', val: madrugada },
+    { name: 'manhã', val: manha },
+    { name: 'tarde', val: tarde },
+    { name: 'noite', val: noite },
   ];
 
   timePeriods.sort((a, b) => b.val - a.val);
-  const bestTimeName = timePeriods[0].val > 0 ? timePeriods[0].name : "indefinido";
+  const bestTimeName =
+    timePeriods[0].val > 0 ? timePeriods[0].name : 'indefinido';
 
   // 4. Consistency in current month
   const daysPassedInMonth = today.getDate();
-  const uniqueDaysReadThisMonth = new Set(currentMonthSessions.map(s => s.date)).size;
+  const uniqueDaysReadThisMonth = new Set(
+    currentMonthSessions.map((s) => s.date)
+  ).size;
 
   // 5. Finished books
-  const finishedBooksCount = books.filter(b => b.status === "finished").length;
+  const finishedBooksCount = books.filter(
+    (b) => b.status === 'finished'
+  ).length;
 
   return {
     currentMonthPages,
@@ -225,6 +264,8 @@ export function generateStoryData(sessions: ReadingSession[], books: Book[]) {
     bestTimeName,
     uniqueDaysReadThisMonth,
     daysPassedInMonth,
-    finishedBooksCount
+    finishedBooksCount,
   };
 }
+
+export * from './metrics';

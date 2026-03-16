@@ -1,4 +1,4 @@
-import { parseISO, getHours } from "date-fns";
+import { getHours, parseISO } from 'date-fns';
 
 export interface ReadingSession {
   created_at: string;
@@ -6,7 +6,7 @@ export interface ReadingSession {
 }
 
 export interface Insight {
-  type: "time" | "consistency" | "trend";
+  type: 'time' | 'consistency' | 'trend';
   title: string;
   description: string;
   icon: string;
@@ -38,24 +38,26 @@ export function getTimeInsight(sessions: ReadingSession[]): Insight | null {
   if (max[1] === 0) return null;
 
   const labels: Record<string, string> = {
-    madrugada: "na madrugada",
-    manha: "pela manhã",
-    tarde: "durante a tarde",
-    noite: "à noite",
+    madrugada: 'na madrugada',
+    manha: 'pela manhã',
+    tarde: 'durante a tarde',
+    noite: 'à noite',
   };
 
   return {
-    type: "time",
+    type: 'time',
     title: `Leitor ${labels[max[0]]}`,
     description: `Seu horário mais produtivo é ${labels[max[0]]}. Tente proteger esse tempo!`,
-    icon: max[0] === "noite" || max[0] === "madrugada" ? "Moon" : "Sun",
+    icon: max[0] === 'noite' || max[0] === 'madrugada' ? 'Moon' : 'Sun',
   };
 }
 
 /**
  * 1.2 Consistência semanal
  */
-export function getConsistencyInsight(sessions: ReadingSession[]): Insight | null {
+export function getConsistencyInsight(
+  sessions: ReadingSession[]
+): Insight | null {
   if (sessions.length < 10) return null;
 
   const dayCounts: Record<number, number> = {};
@@ -68,19 +70,25 @@ export function getConsistencyInsight(sessions: ReadingSession[]): Insight | nul
   if (days.length === 1) return null;
 
   const sorted = days.sort((a, b) => b[1] - a[1]);
-  const bestDay = parseInt(sorted[0][0]);
+  const bestDay = parseInt(sorted[0][0], 10);
 
   const dayNames = [
-    "Domingos", "Segundas", "Terças", "Quartas", "Quintas", "Sextas", "Sábados"
+    'Domingos',
+    'Segundas',
+    'Terças',
+    'Quartas',
+    'Quintas',
+    'Sextas',
+    'Sábados',
   ];
 
   const isWeekend = bestDay === 0 || bestDay === 6;
 
   return {
-    type: "consistency",
-    title: isWeekend ? "Foco no final de semana" : "Foco nos dias úteis",
+    type: 'consistency',
+    title: isWeekend ? 'Foco no final de semana' : 'Foco nos dias úteis',
     description: `${dayNames[bestDay]} costumam ser seus dias mais consistentes de leitura.`,
-    icon: "Calendar",
+    icon: 'Calendar',
   };
 }
 
@@ -94,27 +102,35 @@ export function getTrendInsight(sessions: ReadingSession[]): Insight | null {
   const now = new Date();
   const weekMs = 7 * 24 * 60 * 60 * 1000;
 
-  const thisWeekSessions = sessions.filter(s => {
+  const thisWeekSessions = sessions.filter((s) => {
     const date = parseISO(s.created_at);
     return now.getTime() - date.getTime() <= weekMs;
   });
 
-  const lastWeekSessions = sessions.filter(s => {
+  const lastWeekSessions = sessions.filter((s) => {
     const date = parseISO(s.created_at);
     const diff = now.getTime() - date.getTime();
     return diff > weekMs && diff <= weekMs * 2;
   });
 
-  const thisWeekTotal = thisWeekSessions.reduce((acc, s) => acc + s.pages_read, 0);
-  const lastWeekTotal = lastWeekSessions.reduce((acc, s) => acc + s.pages_read, 0);
+  const thisWeekTotal = thisWeekSessions.reduce(
+    (acc, s) => acc + s.pages_read,
+    0
+  );
+  const lastWeekTotal = lastWeekSessions.reduce(
+    (acc, s) => acc + s.pages_read,
+    0
+  );
 
   if (thisWeekTotal > lastWeekTotal && lastWeekTotal > 0) {
-    const increase = Math.round(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100);
+    const increase = Math.round(
+      ((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100
+    );
     return {
-      type: "trend",
-      title: "Ritmo em alta",
+      type: 'trend',
+      title: 'Ritmo em alta',
       description: `Você leu ${increase}% mais páginas esta semana em comparação com a anterior.`,
-      icon: "TrendingUp",
+      icon: 'TrendingUp',
     };
   }
 

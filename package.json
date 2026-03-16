@@ -9,12 +9,15 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "lint": "turbo lint",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
     "web:dev": "turbo dev --filter=@marcapagina/web",
-    "mobile:dev": "npm run start -w apps/mobile",
+    "mobile:dev": "turbo dev --filter=@marcapagina/mobile",
     "shared:build": "turbo build --filter=@marcapagina/shared"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.7",
     "@turbo/gen": "^2.8.14",
     "turbo": "latest"
   }

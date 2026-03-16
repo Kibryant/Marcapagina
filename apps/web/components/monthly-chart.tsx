@@ -1,18 +1,24 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
 import {
-  BarChart,
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  isSameDay,
+  startOfMonth,
+} from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { useMemo } from 'react';
+import {
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
-import { format, startOfMonth, eachDayOfInterval, endOfMonth, isSameDay } from "date-fns";
-import { ptBR } from "date-fns/locale";
+} from 'recharts';
 
 interface ReadingSession {
   date: string;
@@ -31,13 +37,13 @@ export function MonthlyChart({ sessions }: MonthlyChartProps) {
     const days = eachDayOfInterval({ start, end });
 
     return days.map((day) => {
-      const dateStr = format(day, "yyyy-MM-dd");
+      const dateStr = format(day, 'yyyy-MM-dd');
       const daySessions = sessions.filter((s) => s.date === dateStr);
       const pages = daySessions.reduce((acc, s) => acc + s.pages_read, 0);
 
       return {
         date: dateStr,
-        day: format(day, "d"),
+        day: format(day, 'd'),
         pages,
         isToday: isSameDay(day, today),
       };
@@ -47,8 +53,17 @@ export function MonthlyChart({ sessions }: MonthlyChartProps) {
   return (
     <div className="h-[200px] w-full mt-2">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barGap={0}>
-          <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="var(--border)" opacity={0.4} />
+        <BarChart
+          data={chartData}
+          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+          barGap={0}
+        >
+          <CartesianGrid
+            strokeDasharray="4 4"
+            vertical={false}
+            stroke="var(--border)"
+            opacity={0.4}
+          />
           <XAxis
             dataKey="day"
             axisLine={false}
@@ -64,17 +79,23 @@ export function MonthlyChart({ sessions }: MonthlyChartProps) {
             width={30}
           />
           <Tooltip
-            cursor={{ fill: "var(--primary)", opacity: 0.05 }}
+            cursor={{ fill: 'var(--primary)', opacity: 0.05 }}
             content={({ active, payload }) => {
-              if (active && payload && payload.length) {
+              if (active && payload?.length) {
                 return (
                   <div className="rounded-xl border bg-surface/90 backdrop-blur-sm p-3 shadow-xl ring-1 ring-black/5">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
-                      {format(new Date(payload[0].payload.date + "T12:00:00"), "dd 'de' MMMM", { locale: ptBR })}
+                      {format(
+                        new Date(`${payload[0].payload.date}T12:00:00`),
+                        "dd 'de' MMMM",
+                        { locale: ptBR }
+                      )}
                     </p>
                     <p className="text-sm font-black text-primary flex items-center gap-1">
                       <span className="text-lg">{payload[0].value}</span>
-                      <span className="text-[10px] font-medium opacity-70">páginas</span>
+                      <span className="text-[10px] font-medium opacity-70">
+                        páginas
+                      </span>
                     </p>
                   </div>
                 );
@@ -82,11 +103,7 @@ export function MonthlyChart({ sessions }: MonthlyChartProps) {
               return null;
             }}
           />
-          <Bar
-            dataKey="pages"
-            radius={[6, 6, 0, 0]}
-            barSize={12}
-          >
+          <Bar dataKey="pages" radius={[6, 6, 0, 0]} barSize={12}>
             {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}

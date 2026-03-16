@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface SuggestionCardProps {
   suggestedDaily: number;
@@ -11,7 +11,13 @@ interface SuggestionCardProps {
   onApply: () => void;
 }
 
-export function SuggestionCard({ suggestedDaily, suggestedMonthly, reason, isApplying, onApply }: SuggestionCardProps) {
+export function SuggestionCard({
+  suggestedDaily,
+  suggestedMonthly,
+  reason,
+  isApplying,
+  onApply,
+}: SuggestionCardProps) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-primary/5 p-6 shadow-sm">
       <div className="absolute -right-4 -top-4 h-32 w-32 rounded-full bg-primary/20 blur-3xl" />
@@ -20,7 +26,9 @@ export function SuggestionCard({ suggestedDaily, suggestedMonthly, reason, isApp
         <div className="space-y-3 flex-1">
           <div className="flex items-center gap-2 text-primary">
             <Sparkles className="h-5 w-5" />
-            <h3 className="text-sm font-bold uppercase tracking-wider">Sugestão Inteligente</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider">
+              Sugestão Inteligente
+            </h3>
           </div>
 
           <p className="text-sm font-medium leading-relaxed">{reason}</p>
@@ -44,7 +52,7 @@ export function SuggestionCard({ suggestedDaily, suggestedMonthly, reason, isApp
             className="w-full md:w-auto font-bold rounded-xl"
             size="lg"
           >
-            {isApplying ? "Aplicando..." : "Aceitar Sugestão"}
+            {isApplying ? 'Aplicando...' : 'Aceitar Sugestão'}
           </Button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { startOfMonth, isAfter, subDays, format } from "date-fns";
+import { format, isAfter, startOfMonth, subDays } from 'date-fns';
 
 export interface ReadingSession {
   date: string;
@@ -6,7 +6,7 @@ export interface ReadingSession {
 }
 
 export function getTodayPages(sessions: ReadingSession[]): number {
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = format(new Date(), 'yyyy-MM-dd');
   return sessions
     .filter((s) => s.date === today)
     .reduce((acc, s) => acc + s.pages_read, 0);
@@ -16,7 +16,7 @@ export function getMonthPages(sessions: ReadingSession[]): number {
   const start = startOfMonth(new Date());
   return sessions
     .filter((s) => {
-      const sessionDate = new Date(s.date + "T00:00:00");
+      const sessionDate = new Date(`${s.date}T00:00:00`);
       return !isAfter(start, sessionDate);
     })
     .reduce((acc, s) => acc + s.pages_read, 0);
@@ -39,7 +39,7 @@ export function getStreak(sessions: ReadingSession[]): number {
 
   let streak = 0;
   let currentDate = new Date();
-  const todayStr = format(currentDate, "yyyy-MM-dd");
+  const todayStr = format(currentDate, 'yyyy-MM-dd');
 
   // If today has no reading, we start checking from yesterday
   if ((dailyTotals[todayStr] || 0) === 0) {
@@ -47,7 +47,7 @@ export function getStreak(sessions: ReadingSession[]): number {
   }
 
   while (true) {
-    const dateStr = format(currentDate, "yyyy-MM-dd");
+    const dateStr = format(currentDate, 'yyyy-MM-dd');
     if ((dailyTotals[dateStr] || 0) > 0) {
       streak++;
       currentDate = subDays(currentDate, 1);
@@ -59,7 +59,10 @@ export function getStreak(sessions: ReadingSession[]): number {
   return streak;
 }
 
-export function getDailyGoalProgress(todayPages: number, goal: number | null): number {
+export function getDailyGoalProgress(
+  todayPages: number,
+  goal: number | null
+): number {
   if (!goal || goal <= 0) return 0;
   return Math.min(100, Math.round((todayPages / goal) * 100));
 }

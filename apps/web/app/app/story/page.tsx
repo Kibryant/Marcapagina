@@ -1,28 +1,34 @@
-import { createClient } from "@/lib/supabase/server";
-import { AppShell } from "@/components/app-shell";
-import { ReadingSession, Book, generateStoryData } from "@marcapagina/shared";
-import { StoryCard } from "@/components/story-card";
-import { Calendar, Clock, Trophy, Target, BookOpen } from "lucide-react";
-import { getStreak } from "@marcapagina/shared/metrics";
-import { ReadingHeatmap } from "@/components/reading-heatmap";
+import {
+  type Book,
+  generateStoryData,
+  type ReadingSession,
+} from '@marcapagina/shared';
+import { getStreak } from '@marcapagina/shared/metrics';
+import { BookOpen, Calendar, Clock, Target, Trophy } from 'lucide-react';
+import { AppShell } from '@/components/app-shell';
+import { ReadingHeatmap } from '@/components/reading-heatmap';
+import { StoryCard } from '@/components/story-card';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function StoryPage() {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Fetch current reading history
   const { data: sessions } = await supabase
-    .from("reading_sessions")
-    .select("id, user_id, book_id, date, pages_read, created_at")
-    .eq("user_id", user?.id)
-    .order("date", { ascending: false });
+    .from('reading_sessions')
+    .select('id, user_id, book_id, date, pages_read, created_at')
+    .eq('user_id', user?.id)
+    .order('date', { ascending: false });
 
   // Fetch books
   const { data: books } = await supabase
-    .from("books")
-    .select("id, status")
-    .eq("user_id", user?.id);
+    .from('books')
+    .select('id, status')
+    .eq('user_id', user?.id);
 
   const sessionList = (sessions || []) as ReadingSession[];
   const bookList = (books || []) as Book[];
@@ -42,15 +48,24 @@ export default async function StoryPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-
           <div className="md:col-span-2 lg:col-span-3">
             <StoryCard
               title="Resumo do Mês"
               value={`${storyData.currentMonthPages} páginas`}
               description={`Neste mês você construiu mais um capítulo do seu hábito de leitura.`}
               icon={<BookOpen className="h-4 w-4" />}
-              trend={storyData.monthComparisonPercent > 0 ? "up" : storyData.monthComparisonPercent < 0 ? "down" : "neutral"}
-              trendValue={storyData.lastMonthPages > 0 ? `${storyData.monthComparisonPercent > 0 ? '+' : ''}${storyData.monthComparisonPercent}%` : undefined}
+              trend={
+                storyData.monthComparisonPercent > 0
+                  ? 'up'
+                  : storyData.monthComparisonPercent < 0
+                    ? 'down'
+                    : 'neutral'
+              }
+              trendValue={
+                storyData.lastMonthPages > 0
+                  ? `${storyData.monthComparisonPercent > 0 ? '+' : ''}${storyData.monthComparisonPercent}%`
+                  : undefined
+              }
               highlight
             />
           </div>
@@ -64,14 +79,18 @@ export default async function StoryPage() {
 
           <StoryCard
             title="O Dia Favorito"
-            value={storyData.bestDayName.replace(/^\w/, (c: string) => c.toUpperCase())}
+            value={storyData.bestDayName.replace(/^\w/, (c: string) =>
+              c.toUpperCase()
+            )}
             description="Seu desempenho máximo tende a acontecer com mais frequência neste dia."
             icon={<Calendar className="h-4 w-4" />}
           />
 
           <StoryCard
             title="Horário Forte"
-            value={storyData.bestTimeName.replace(/^\w/, (c: string) => c.toUpperCase())}
+            value={storyData.bestTimeName.replace(/^\w/, (c: string) =>
+              c.toUpperCase()
+            )}
             description={`Os dados mostram que você constrói o hábito melhor no período da ${storyData.bestTimeName}.`}
             icon={<Clock className="h-4 w-4" />}
           />
@@ -97,7 +116,6 @@ export default async function StoryPage() {
           <div className="md:col-span-2 lg:col-span-3 pt-4">
             <ReadingHeatmap sessions={sessionList} />
           </div>
-
         </div>
       </div>
     </AppShell>

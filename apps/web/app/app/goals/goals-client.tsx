@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import { GoalCard } from "@/components/goal-card";
-import { SuggestionCard } from "@/components/suggestion-card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { Card } from "@/components/ui/card";
-import { Goal, calculateGoalsSuggestions } from "@marcapagina/shared";
+import type { calculateGoalsSuggestions, Goal } from '@marcapagina/shared';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { GoalCard } from '@/components/goal-card';
+import { SuggestionCard } from '@/components/suggestion-card';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/client';
 
 export function GoalsClient({
   currentPages,
   currentMonthPages,
   goal,
-  suggestion
+  suggestion,
 }: {
-  currentPages: number,
-  currentMonthPages: number,
-  goal: Goal | null,
-  suggestion: ReturnType<typeof calculateGoalsSuggestions> | null
+  currentPages: number;
+  currentMonthPages: number;
+  goal: Goal | null;
+  suggestion: ReturnType<typeof calculateGoalsSuggestions> | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -30,48 +30,64 @@ export function GoalsClient({
   const [isApplying, setIsApplying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [dailyGoalStr, setDailyGoalStr] = useState(String(goal?.daily_pages || ""));
-  const [monthlyGoalStr, setMonthlyGoalStr] = useState(String(goal?.monthly_pages || ""));
+  const [dailyGoalStr, setDailyGoalStr] = useState(
+    String(goal?.daily_pages || '')
+  );
+  const [monthlyGoalStr, setMonthlyGoalStr] = useState(
+    String(goal?.monthly_pages || '')
+  );
 
   const handleApplySuggestion = async () => {
     setIsApplying(true);
 
     // Check if user is logged in
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
-      toast({ title: "Erro", description: "Usuário não autenticado." });
+      toast({ title: 'Erro', description: 'Usuário não autenticado.' });
       setIsApplying(false);
       return;
     }
 
     if (!suggestion) {
-      toast({ title: "Erro", description: "Sugestão não encontrada." });
+      toast({ title: 'Erro', description: 'Sugestão não encontrada.' });
       setIsApplying(false);
       return;
     }
 
     try {
       // Deactivate current goals
-      await supabase.from("goals").update({ active: false }).eq("user_id", user.id);
+      await supabase
+        .from('goals')
+        .update({ active: false })
+        .eq('user_id', user.id);
 
       // Insert new goal
-      const { error } = await supabase.from("goals").insert({
+      const { error } = await supabase.from('goals').insert({
         user_id: user.id,
         daily_pages: suggestion.suggestedDaily,
         monthly_pages: suggestion.suggestedMonthly,
         suggested_daily_pages: suggestion.suggestedDaily,
         suggested_monthly_pages: suggestion.suggestedMonthly,
         suggested_reason: suggestion.reason,
-        active: true
+        active: true,
       });
 
       if (error) throw error;
 
-      toast({ title: "Sucesso!", description: "Suas metas foram atualizadas." });
+      toast({
+        title: 'Sucesso!',
+        description: 'Suas metas foram atualizadas.',
+      });
       router.refresh(); // Reload to fetch fresh data
     } catch (err: unknown) {
       if (err instanceof Error) {
-        toast({ title: "Erro", description: err.message, variant: "destructive" });
+        toast({
+          title: 'Erro',
+          description: err.message,
+          variant: 'destructive',
+        });
       }
     } finally {
       setIsApplying(false);
@@ -82,38 +98,54 @@ export function GoalsClient({
     e.preventDefault();
     setIsSaving(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       setIsSaving(false);
       return;
     }
 
-    const d = parseInt(dailyGoalStr);
-    const m = parseInt(monthlyGoalStr);
+    const d = parseInt(dailyGoalStr, 10);
+    const m = parseInt(monthlyGoalStr, 10);
 
-    if (isNaN(d) || isNaN(m) || d <= 0 || m <= 0) {
-      toast({ title: "Erro", description: "Valores inválidos. Use números maiores que zero.", variant: "destructive" });
+    if (Number.isNaN(d) || Number.isNaN(m) || d <= 0 || m <= 0) {
+      toast({
+        title: 'Erro',
+        description: 'Valores inválidos. Use números maiores que zero.',
+        variant: 'destructive',
+      });
       setIsSaving(false);
       return;
     }
 
     try {
-      await supabase.from("goals").update({ active: false }).eq("user_id", user.id);
+      await supabase
+        .from('goals')
+        .update({ active: false })
+        .eq('user_id', user.id);
 
-      const { error } = await supabase.from("goals").insert({
+      const { error } = await supabase.from('goals').insert({
         user_id: user.id,
         daily_pages: d,
         monthly_pages: m,
-        active: true
+        active: true,
       });
 
       if (error) throw error;
 
-      toast({ title: "Metas salvas", description: "Suas metas manuais foram registradas com sucesso." });
+      toast({
+        title: 'Metas salvas',
+        description: 'Suas metas manuais foram registradas com sucesso.',
+      });
       router.refresh();
     } catch (err: unknown) {
       if (err instanceof Error) {
-        toast({ title: "Erro", description: err.message, variant: "destructive" });
+        toast({
+          title: 'Erro',
+          description: err.message,
+          variant: 'destructive',
+        });
       }
     } finally {
       setIsSaving(false);
@@ -125,7 +157,9 @@ export function GoalsClient({
       {/* Current Progress Cards */}
       {goal?.daily_pages && goal?.monthly_pages && (
         <section className="space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Progresso Atual</h2>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+            Progresso Atual
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <GoalCard
               title="Meta Diária"
@@ -146,7 +180,9 @@ export function GoalsClient({
       {/* Suggestion Card */}
       {suggestion && (
         <section className="space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Sua recomendação</h2>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+            Sua recomendação
+          </h2>
           <SuggestionCard
             suggestedDaily={suggestion.suggestedDaily}
             suggestedMonthly={suggestion.suggestedMonthly}
@@ -159,7 +195,9 @@ export function GoalsClient({
 
       {/* Manual Edit Form */}
       <section className="space-y-4 pt-4 border-t border-border">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Editar Manualmente</h2>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+          Editar Manualmente
+        </h2>
         <Card className="p-6">
           <form onSubmit={handleManualSave} className="space-y-4 max-w-sm">
             <div className="space-y-2">
@@ -187,7 +225,7 @@ export function GoalsClient({
             </div>
 
             <Button type="submit" disabled={isSaving} className="w-full">
-              {isSaving ? "Salvando..." : "Salvar Metas"}
+              {isSaving ? 'Salvando...' : 'Salvar Metas'}
             </Button>
           </form>
         </Card>

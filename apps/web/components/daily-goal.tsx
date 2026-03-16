@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { ProgressBar } from "@/components/ui/progress-bar";
+import { ProgressBar } from '@/components/ui/progress-bar';
 
 interface DailyGoalProps {
   currentPages: number;
@@ -18,16 +18,22 @@ export function DailyGoal({ currentPages, goal }: DailyGoalProps) {
       <div className="relative space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Foco Diário</h3>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Foco Diário
+            </h3>
             <div className="flex items-baseline gap-1">
               <span className="text-2xl font-black">{currentPages}</span>
-              <span className="text-sm font-medium text-muted-foreground">/ {goal} páginas</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                / {goal} páginas
+              </span>
             </div>
           </div>
           <div className="flex flex-col items-end">
-            <div className="text-3xl font-black text-primary leading-none">{progress}%</div>
+            <div className="text-3xl font-black text-primary leading-none">
+              {progress}%
+            </div>
             <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">
-              {progress >= 100 ? "Completo!" : "Em progresso"}
+              {progress >= 100 ? 'Completo!' : 'Em progresso'}
             </p>
           </div>
         </div>
@@ -44,7 +50,7 @@ export function DailyGoal({ currentPages, goal }: DailyGoalProps) {
         <p className="text-xs font-medium text-muted-foreground leading-relaxed">
           {remaining > 0
             ? `Você está a ${remaining} páginas de atingir seu objetivo hoje.`
-            : "Incrível! Você superou sua meta de hoje. Mantenha o ritmo! 🎉"}
+            : 'Incrível! Você superou sua meta de hoje. Mantenha o ritmo! 🎉'}
         </p>
       </div>
     </div>
