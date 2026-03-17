@@ -20,5 +20,8 @@
     "@biomejs/biome": "2.4.7",
     "@turbo/gen": "^2.8.14",
     "turbo": "latest"
+  },
+  "dependencies": {
+    "html-to-image": "^1.11.13"
   }
 }

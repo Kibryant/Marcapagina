@@ -3,16 +3,24 @@
 import {
   type Book as BookType,
   cn,
+  getStreak,
   type Highlight,
   type ReadingSession,
 } from '@marcapagina/shared';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { BookOpen, Calendar, ChevronLeft, Quote, Trash2 } from 'lucide-react';
+import {
+  BookOpen,
+  Calendar,
+  ChevronLeft,
+  Quote,
+  Trash2,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
+import { SharingCard } from '@/components/sharing-card';
 import { StarRating } from '@/components/star-rating';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +35,7 @@ export default function BookDetailsPage() {
   const { id } = useParams();
   const [book, setBook] = useState<BookType | null>(null);
   const [sessions, setSessions] = useState<ReadingSession[]>([]);
+  const [allSessions, setAllSessions] = useState<ReadingSession[]>([]);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [newHighlight, setNewHighlight] = useState('');
   const [highlightPage, setHighlightPage] = useState('');
@@ -42,6 +51,8 @@ export default function BookDetailsPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+
+    const { data: { user } } = await supabase.auth.getUser();
 
     const { data: bookData } = await supabase
       .from('books')
@@ -59,6 +70,14 @@ export default function BookDetailsPage() {
         .order('date', { ascending: false });
 
       setSessions(sessionsData || []);
+
+      const { data: allSessionsData } = await supabase
+        .from('reading_sessions')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('date', { ascending: false });
+
+      setAllSessions(allSessionsData || []);
 
       const { data: highlightsData } = await supabase
         .from('highlights')
@@ -273,6 +292,8 @@ export default function BookDetailsPage() {
     Math.round((book.current_page / book.total_pages) * 100)
   );
 
+  const streak = getStreak(allSessions);
+
   return (
     <AppShell>
       <div className="space-y-8">
@@ -342,6 +363,12 @@ export default function BookDetailsPage() {
                         Finalizar Livro
                       </Button>
                     )}
+
+                  <SharingCard
+                    book={book}
+                    sessions={sessions}
+                    streak={streak}
+                  />
                 </div>
               </div>
 
@@ -543,6 +570,7 @@ export default function BookDetailsPage() {
                         {highlight.page ? `Página ${highlight.page}` : 'Nota'}
                       </span>
                       <button
+                        type="button"
                         onClick={() => handleDeleteHighlight(highlight.id)}
                         className="text-muted-foreground hover:text-danger opacity-0 group-hover:opacity-100 transition-all duration-200"
                         title="Excluir"

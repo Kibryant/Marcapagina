@@ -12,7 +12,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LogReadingLoadingSkeleton } from '@/components/ui/skeletons';
+import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
+import { processReadingXP } from '@/lib/xp';
 
 export default function LogPage() {
   const [books, setBooks] = useState<BookType[]>([]);
@@ -22,6 +24,7 @@ export default function LogPage() {
   const [showTimer, setShowTimer] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
   const supabase = createClient();
 
   useEffect(() => {
@@ -96,6 +99,34 @@ export default function LogPage() {
       return;
     }
 
+    // 3. Process XP and Achievements
+    try {
+      if (user?.id) {
+        const result = await processReadingXP(user.id, pagesRead, duration);
+
+        let message = `+${result.xpGained} XP acumulados!`;
+        if (result.leveledUp) {
+          message += ` 🎉 SUBIU PARA O NÍVEL ${result.newLevel}!`;
+        }
+        if (result.newAchievements.length > 0) {
+          message += ` 🏆 Nova conquista: ${result.newAchievements.join(', ')}!`;
+        }
+
+        toast({
+          title: 'Leitura registrada!',
+          description: message,
+        });
+      }
+    } catch (xpError) {
+      console.error('Error processing XP:', xpError);
+      toast({
+        title: 'Leitura registrada!',
+        description:
+          'Sua leitura foi salva, mas houve um erro ao processar o XP.',
+        variant: 'destructive',
+      });
+    }
+
     router.push('/app');
     router.refresh();
   };
@@ -151,6 +182,7 @@ export default function LogPage() {
                   {books.map((book) => (
                     <button
                       key={book.id}
+                      type="button"
                       onClick={() => setSelectedBookId(book.id)}
                       className={cn(
                         'flex items-center justify-between p-3 rounded-xl border text-left transition-colors',
