@@ -1,3 +1,4 @@
+import { getStreak } from '@marcapagina/shared';
 import { createClient } from './supabase/client';
 
 export const XP_PER_PAGE = 10;
@@ -52,46 +53,80 @@ export async function processReadingXP(
     })
     .eq('id', userId);
 
-  // 4. Achievement Checks (Basic logic for now)
-  const newAchievements: string[] = [];
-
-  // Example Check: First Log
-  const { count: sessionCount } = await supabase
-    .from('reading_sessions')
-    .select('*', { count: 'exact', head: true })
+  // 4. Fetch all achievements and user's current achievements
+  const { data: allAchievements } = await supabase
+    .from('achievements')
+    .select('*');
+  const { data: userAchievements } = await supabase
+    .from('user_achievements')
+    .select('achievement_id')
     .eq('user_id', userId);
 
-  if (sessionCount === 1) {
-    const { data: ach } = await supabase
-      .from('achievements')
+  const ownedAchievementIds = new Set(
+    userAchievements?.map((ua) => ua.achievement_id) || []
+  );
+  const newAchievements: string[] = [];
+
+  if (allAchievements) {
+    // Fetch data for criteria evaluation
+    const { data: sessions } = await supabase
+      .from('reading_sessions')
       .select('*')
-      .eq('criteria_type', 'first_log')
-      .single();
+      .eq('user_id', userId);
 
-    if (ach) {
-      const { error: achErr } = await supabase
-        .from('user_achievements')
-        .insert({ user_id: userId, achievement_id: ach.id });
+    const { count: booksFinished } = await supabase
+      .from('books')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'finished');
 
-      if (!achErr) newAchievements.push(ach.name);
-    }
-  }
+    const { count: totalBooks } = await supabase
+      .from('books')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
 
-  // Example Check: Night Owl (00:00 - 04:00)
-  const hour = new Date().getHours();
-  if (hour >= 0 && hour <= 4) {
-    const { data: ach } = await supabase
-      .from('achievements')
-      .select('*')
-      .eq('criteria_type', 'night_owl')
-      .single();
+    const today = new Date().toISOString().split('T')[0];
+    const pagesToday =
+      sessions
+        ?.filter((s) => s.date === today)
+        .reduce((sum, s) => sum + s.pages_read, 0) || 0;
+    const currentStreak = sessions ? getStreak(sessions) : 0;
+    const hour = new Date().getHours();
 
-    if (ach) {
-      const { error: achErr } = await supabase
-        .from('user_achievements')
-        .insert({ user_id: userId, achievement_id: ach.id });
+    for (const ach of allAchievements) {
+      if (ownedAchievementIds.has(ach.id)) continue;
 
-      if (!achErr) newAchievements.push(ach.name);
+      let isEligible = false;
+      switch (ach.criteria_type) {
+        case 'first_log':
+          isEligible = (sessions?.length || 0) >= 1;
+          break;
+        case 'streak':
+          isEligible = currentStreak >= (ach.criteria_value || 3);
+          break;
+        case 'pages_day':
+          isEligible = pagesToday >= (ach.criteria_value || 100);
+          break;
+        case 'night_owl':
+          isEligible = hour >= 0 && hour <= 4;
+          break;
+        case 'books_finished':
+          isEligible = (booksFinished || 0) >= (ach.criteria_value || 1);
+          break;
+        case 'books_added':
+          isEligible = (totalBooks || 0) >= (ach.criteria_value || 5);
+          break;
+      }
+
+      if (isEligible) {
+        const { error: insErr } = await supabase
+          .from('user_achievements')
+          .insert({ user_id: userId, achievement_id: ach.id });
+
+        if (!insErr) {
+          newAchievements.push(ach.name);
+        }
+      }
     }
   }
 

@@ -43,6 +43,7 @@ export default async function StoryPage() {
     .eq('user_id', user?.id);
 
   const achievementList = (allAchievements || []) as Achievement[];
+
   const unlockedMap = new Map(
     (unlockedAchievements || []).map((ua) => [
       ua.achievement_id,
