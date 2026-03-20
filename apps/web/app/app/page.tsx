@@ -7,6 +7,7 @@ import {
 import {
   BookPlus,
   Calendar,
+  Flame,
   Lightbulb,
   Moon,
   Plus,
@@ -17,6 +18,7 @@ import {
 import Link from 'next/link';
 import { AppShell } from '@/components/app-shell';
 import { BookCard } from '@/components/book-card';
+import { CategoryBreakdown } from '@/components/category-breakdown';
 import { DailyGoal } from '@/components/daily-goal';
 import { EmptyState } from '@/components/empty-state';
 import { MonthlyChart } from '@/components/monthly-chart';
@@ -72,7 +74,7 @@ export default async function DashboardPage() {
   const userInsights = getAllInsights(sessionList || []);
   const habitRecs = getHabitRecommendations(userInsights);
   const bookRecs = getBookRecommendations(books || []);
-  const allRecs = [...habitRecs, ...bookRecs];
+  const allRecommendations = [...habitRecs, ...bookRecs];
 
   // XP Progress
   const xp = profile?.xp || 0;
@@ -112,6 +114,33 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Streak At Risk Banner */}
+        {todayPages === 0 && streak > 0 && (
+          <Link
+            href="/app/log"
+            className="group flex items-center gap-4 p-4 rounded-2xl border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-all duration-300"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-500 shrink-0 group-hover:scale-110 transition-transform">
+              <Flame className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-amber-500">
+                {streak >= 7
+                  ? `Sua sequência de ${streak} dias está em risco! 🔥`
+                  : streak >= 3
+                    ? `${streak} dias seguidos! Não pare agora! 🔥`
+                    : `Mantenha seu streak de ${streak} dia${streak > 1 ? 's' : ''}! 🔥`}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Registre pelo menos uma página hoje para manter a sequência.
+              </p>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500/70 shrink-0 hidden sm:block">
+              Ler agora →
+            </span>
+          </Link>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
           {/* Main Column */}
@@ -167,6 +196,7 @@ export default async function DashboardPage() {
                       current_page={book.current_page}
                       total_pages={book.total_pages}
                       status={book.status}
+                      cover_url={book.cover_url}
                     />
                   ))}
                 </div>
@@ -184,8 +214,11 @@ export default async function DashboardPage() {
 
           {/* Right Column / Sidebar Insights */}
           <aside className="space-y-8 lg:sticky lg:top-8">
+            {/* Category Breakdown */}
+            <CategoryBreakdown books={books || []} />
+
             {/* v3: Insights & Tips Section */}
-            {(userInsights.length > 0 || allRecs.length > 0) && (
+            {(userInsights.length > 0 || allRecommendations.length > 0) && (
               <section className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
@@ -195,7 +228,7 @@ export default async function DashboardPage() {
                 </div>
 
                 <div className="space-y-3">
-                  {userInsights.slice(0, 2).map((insight, idx) => {
+                  {userInsights.slice(0, 2).map((insight) => {
                     const Icon =
                       insight.icon === 'Moon'
                         ? Moon
@@ -209,7 +242,7 @@ export default async function DashboardPage() {
 
                     return (
                       <div
-                        key={idx}
+                        key={`${insight.title}-${insight.description}`}
                         className="rounded-2xl border bg-surface p-4 space-y-2 shadow-sm border-primary/20 bg-primary/2"
                       >
                         <div className="flex items-center gap-2 text-primary">
@@ -228,9 +261,9 @@ export default async function DashboardPage() {
                     );
                   })}
 
-                  {allRecs.slice(0, 2).map((rec, idx) => (
+                  {allRecommendations.slice(0, 2).map((recommendation) => (
                     <div
-                      key={idx}
+                      key={`${recommendation.title}-${recommendation.description}`}
                       className="rounded-2xl border bg-surface p-4 space-y-2 shadow-sm border-success/20 bg-success/2"
                     >
                       <div className="flex items-center gap-2 text-success">
@@ -240,17 +273,17 @@ export default async function DashboardPage() {
                         </span>
                       </div>
                       <h3 className="font-bold text-sm leading-tight">
-                        {rec.title}
+                        {recommendation.title}
                       </h3>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        {rec.description}
+                        {recommendation.description}
                       </p>
-                      {rec.actionLabel && (
+                      {recommendation.actionLabel && (
                         <Link
-                          href={rec.actionHref || '#'}
+                          href={recommendation.actionHref || '#'}
                           className="text-xs font-bold text-success hover:underline inline-block pt-1"
                         >
-                          {rec.actionLabel} →
+                          {recommendation.actionLabel} →
                         </Link>
                       )}
                     </div>

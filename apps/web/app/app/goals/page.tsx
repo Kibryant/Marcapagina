@@ -40,9 +40,7 @@ export default async function GoalsPage() {
     <AppShell>
       <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Suas Metas Diárias 🎯
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight">Suas Metas 🎯</h1>
           <p className="text-muted-foreground text-sm mt-1">
             Consistência é o segredo para construir o hábito de leitura.
           </p>
