@@ -3,6 +3,7 @@ import { generateStoryData, getStreak } from '@marcapagina/shared';
 import { BookOpen, Calendar, Clock, Target, Trophy } from 'lucide-react';
 import { AchievementCard } from '@/components/achievement-card';
 import { AppShell } from '@/components/app-shell';
+import { ReadingCharts } from '@/components/reading-charts';
 import { ReadingHeatmap } from '@/components/reading-heatmap';
 import { StoryCard } from '@/components/story-card';
 import { createClient } from '@/lib/supabase/server';
@@ -17,7 +18,7 @@ export default async function StoryPage() {
   // Fetch current reading history
   const { data: sessions } = await supabase
     .from('reading_sessions')
-    .select('id, user_id, book_id, date, pages_read, created_at')
+    .select('id, user_id, book_id, date, pages_read, duration_minutes, created_at')
     .eq('user_id', user?.id)
     .order('date', { ascending: false });
 
@@ -133,6 +134,10 @@ export default async function StoryPage() {
 
           <div className="md:col-span-2 lg:col-span-3 pt-4">
             <ReadingHeatmap sessions={sessionList} />
+          </div>
+
+          <div className="md:col-span-2 lg:col-span-3 pt-8 border-t border-dashed">
+            <ReadingCharts sessions={sessionList} />
           </div>
 
           {/* Achievements Section */}
