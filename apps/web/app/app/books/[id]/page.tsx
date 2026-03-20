@@ -13,26 +13,48 @@ import {
   BookOpen,
   Calendar,
   ChevronLeft,
+  Pencil,
   Quote,
+  Tag,
   Trash2,
+  X,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { SharingCard } from '@/components/sharing-card';
 import { StarRating } from '@/components/star-rating';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ProgressBar } from '@/components/ui/progress-bar';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { BookDetailsLoadingSkeleton } from '@/components/ui/skeletons';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 
 export default function BookDetailsPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [book, setBook] = useState<BookType | null>(null);
   const [sessions, setSessions] = useState<ReadingSession[]>([]);
   const [allSessions, setAllSessions] = useState<ReadingSession[]>([]);
@@ -46,13 +68,29 @@ export default function BookDetailsPage() {
   const [isEditingSummary, setIsEditingSummary] = useState(false);
   const [savingSummary, setSavingSummary] = useState(false);
 
+  // Delete book
+  const [deletingBook, setDeletingBook] = useState(false);
+
+  // Edit/delete sessions
+  const [editingSession, setEditingSession] = useState<{
+    id: string;
+    pages: number;
+    date: string;
+  } | null>(null);
+  const [savingSession, setSavingSession] = useState(false);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(
+    null
+  );
+
   const supabase = createClient();
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     const { data: bookData } = await supabase
       .from('books')
@@ -186,9 +224,7 @@ export default function BookDetailsPage() {
   const handleStartReading = async () => {
     const { error } = await supabase
       .from('books')
-      .update({
-        status: 'reading',
-      })
+      .update({ status: 'reading' })
       .eq('id', id);
 
     if (error) {
@@ -215,7 +251,6 @@ export default function BookDetailsPage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // 1. If there are remaining pages, log them as a session
     if (remainingPages > 0) {
       await supabase.from('reading_sessions').insert({
         user_id: user?.id,
@@ -225,13 +260,9 @@ export default function BookDetailsPage() {
       });
     }
 
-    // 2. Update book status
     const { error } = await supabase
       .from('books')
-      .update({
-        current_page: book.total_pages,
-        status: 'finished',
-      })
+      .update({ current_page: book.total_pages, status: 'finished' })
       .eq('id', id);
 
     if (error) {
@@ -250,6 +281,25 @@ export default function BookDetailsPage() {
     }
   };
 
+  const handleCategoryChange = async (newCategory: string) => {
+    if (!book) return;
+    const value = newCategory === 'none' ? null : newCategory;
+    const { error } = await supabase
+      .from('books')
+      .update({ category: value })
+      .eq('id', id);
+    if (error) {
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      setBook({ ...book, category: value });
+      toast({ title: 'Categoria atualizada!', variant: 'success' });
+    }
+  };
+
   const handleDeleteHighlight = async (highlightId: string) => {
     const { error } = await supabase
       .from('highlights')
@@ -264,12 +314,101 @@ export default function BookDetailsPage() {
       });
     } else {
       setHighlights(highlights.filter((h) => h.id !== highlightId));
-      toast({
-        title: 'Removido',
-        description: 'Trecho excluído.',
-        variant: 'default',
-      });
+      toast({ title: 'Removido', description: 'Trecho excluído.' });
     }
+  };
+
+  // ── Delete book ──────────────────────────────────────────────────────────────
+  const handleDeleteBook = async () => {
+    if (!book) return;
+    setDeletingBook(true);
+
+    await supabase.from('highlights').delete().eq('book_id', id);
+    await supabase.from('reading_sessions').delete().eq('book_id', id);
+    const { error } = await supabase.from('books').delete().eq('id', id);
+
+    if (error) {
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
+      setDeletingBook(false);
+    } else {
+      router.push('/app/books');
+    }
+  };
+
+  // ── Edit session ─────────────────────────────────────────────────────────────
+  const handleSaveSessionEdit = async () => {
+    if (!editingSession || !book) return;
+    setSavingSession(true);
+
+    const oldSession = sessions.find((s) => s.id === editingSession.id);
+    if (!oldSession) {
+      setSavingSession(false);
+      return;
+    }
+
+    const pagesDelta = editingSession.pages - oldSession.pages_read;
+
+    const { error: sessionError } = await supabase
+      .from('reading_sessions')
+      .update({ pages_read: editingSession.pages, date: editingSession.date })
+      .eq('id', editingSession.id);
+
+    if (sessionError) {
+      toast({
+        title: 'Erro',
+        description: sessionError.message,
+        variant: 'destructive',
+      });
+      setSavingSession(false);
+      return;
+    }
+
+    const newCurrentPage = Math.max(
+      0,
+      Math.min(book.total_pages, book.current_page + pagesDelta)
+    );
+    await supabase
+      .from('books')
+      .update({ current_page: newCurrentPage })
+      .eq('id', id);
+
+    setEditingSession(null);
+    toast({ title: 'Sessão atualizada!', variant: 'success' });
+    fetchData();
+    setSavingSession(false);
+  };
+
+  // ── Delete session ───────────────────────────────────────────────────────────
+  const handleDeleteSession = async (sessionId: string, pagesRead: number) => {
+    if (!book) return;
+
+    const { error } = await supabase
+      .from('reading_sessions')
+      .delete()
+      .eq('id', sessionId);
+
+    if (error) {
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const newCurrentPage = Math.max(0, book.current_page - pagesRead);
+    await supabase
+      .from('books')
+      .update({ current_page: newCurrentPage })
+      .eq('id', id);
+
+    setDeletingSessionId(null);
+    toast({ title: 'Sessão removida.' });
+    fetchData();
   };
 
   if (loading) return <BookDetailsLoadingSkeleton />;
@@ -305,22 +444,64 @@ export default function BookDetailsPage() {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
-          {/* Main Content: Header, Progress & History */}
+          {/* Main Content */}
           <div className="space-y-8">
             {/* Book Header */}
             <section className="space-y-4">
               <div className="flex justify-between items-start gap-4">
-                <div className="space-y-1.5">
-                  <h1 className="text-3xl font-bold tracking-tight">
-                    {book.title}
-                  </h1>
-                  <p className="text-muted-foreground text-lg">{book.author}</p>
-                  <StarRating
-                    value={book.rating}
-                    onChange={handleRating}
-                    size="md"
-                  />
+                {/* Left: cover + info */}
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                  {book.cover_url && (
+                    <Image
+                      src={book.cover_url}
+                      alt={book.title}
+                      width={72}
+                      height={100}
+                      className="object-cover rounded-lg shadow-md shrink-0"
+                    />
+                  )}
+                  <div className="space-y-1.5 min-w-0">
+                    <h1 className="text-3xl font-bold tracking-tight">
+                      {book.title}
+                    </h1>
+                    <p className="text-muted-foreground text-lg">
+                      {book.author}
+                    </p>
+                    <StarRating
+                      value={book.rating}
+                      onChange={handleRating}
+                      size="md"
+                    />
+                    <div className="flex items-center gap-2 mt-2">
+                      <Tag className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Select
+                        value={book.category || 'none'}
+                        onValueChange={handleCategoryChange}
+                      >
+                        <SelectTrigger className="h-8 w-auto min-w-[160px] text-xs">
+                          <SelectValue placeholder="Sem categoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Sem categoria</SelectItem>
+                          <SelectItem value="ficcao">📖 Ficção</SelectItem>
+                          <SelectItem value="nao-ficcao">
+                            📘 Não-ficção
+                          </SelectItem>
+                          <SelectItem value="tech">💻 Tecnologia</SelectItem>
+                          <SelectItem value="negocios">💼 Negócios</SelectItem>
+                          <SelectItem value="autoajuda">🌱 Autoajuda</SelectItem>
+                          <SelectItem value="biografia">👤 Biografia</SelectItem>
+                          <SelectItem value="fantasia">🐉 Fantasia</SelectItem>
+                          <SelectItem value="romance">💕 Romance</SelectItem>
+                          <SelectItem value="suspense">🔍 Suspense</SelectItem>
+                          <SelectItem value="academico">🎓 Acadêmico</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Right: status + actions */}
                 <div className="flex flex-col items-end gap-2 shrink-0">
                   <div
                     className={cn(
@@ -369,6 +550,43 @@ export default function BookDetailsPage() {
                     sessions={sessions}
                     streak={streak}
                   />
+
+                  {/* Delete book */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir Livro
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Excluir "{book.title}"?</DialogTitle>
+                        <DialogDescription>
+                          Todos os registros de leitura e trechos salvos serão
+                          excluídos permanentemente. Esta ação não pode ser
+                          desfeita.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline">Cancelar</Button>
+                        </DialogClose>
+                        <Button
+                          variant="destructive"
+                          onClick={handleDeleteBook}
+                          disabled={deletingBook}
+                        >
+                          {deletingBook
+                            ? 'Excluindo...'
+                            : 'Excluir Permanentemente'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
 
@@ -467,30 +685,128 @@ export default function BookDetailsPage() {
               </h2>
               {sessions.length > 0 ? (
                 <div className="grid gap-3">
-                  {sessions.slice(0, 10).map((session) => (
-                    <div
-                      key={session.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-surface border shadow-sm hover:border-primary/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="p-2.5 bg-muted rounded-xl text-muted-foreground">
-                          <BookOpen className="h-5 w-5" />
+                  {sessions.slice(0, 10).map((session) => {
+                    const isEditing = editingSession?.id === session.id;
+
+                    if (isEditing) {
+                      return (
+                        <div
+                          key={session.id}
+                          className="p-4 rounded-xl bg-primary/5 border border-primary/30 space-y-3"
+                        >
+                          <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                            Editar sessão
+                          </p>
+                          <div className="flex flex-wrap gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+                                Páginas lidas
+                              </Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                className="w-28 h-8 text-sm"
+                                value={editingSession.pages}
+                                onChange={(e) =>
+                                  setEditingSession({
+                                    ...editingSession,
+                                    pages:
+                                      parseInt(e.target.value, 10) ||
+                                      editingSession.pages,
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+                                Data
+                              </Label>
+                              <Input
+                                type="date"
+                                className="h-8 text-sm"
+                                value={editingSession.date}
+                                onChange={(e) =>
+                                  setEditingSession({
+                                    ...editingSession,
+                                    date: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              className="h-8 text-xs"
+                              onClick={handleSaveSessionEdit}
+                              disabled={savingSession}
+                            >
+                              {savingSession ? 'Salvando...' : 'Salvar'}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 text-xs"
+                              onClick={() => setEditingSession(null)}
+                            >
+                              <X className="h-3.5 w-3.5 mr-1" /> Cancelar
+                            </Button>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold">
-                            {session.pages_read} páginas lidas
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(
-                              new Date(`${session.date}T12:00:00`),
-                              "d 'de' MMMM, yyyy",
-                              { locale: ptBR }
-                            )}
-                          </p>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={session.id}
+                        className="group flex items-center justify-between p-4 rounded-xl bg-surface border shadow-sm hover:border-primary/30 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="p-2.5 bg-muted rounded-xl text-muted-foreground">
+                            <BookOpen className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold">
+                              {session.pages_read} páginas lidas
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(
+                                new Date(`${session.date}T12:00:00`),
+                                "d 'de' MMMM, yyyy",
+                                { locale: ptBR }
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEditingSession({
+                                id: session.id,
+                                pages: session.pages_read,
+                                date: session.date,
+                              })
+                            }
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                            title="Editar"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDeletingSessionId(session.id)
+                            }
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            title="Excluir"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground bg-muted/30 p-8 rounded-2xl text-center border border-dashed">
@@ -572,7 +888,7 @@ export default function BookDetailsPage() {
                       <button
                         type="button"
                         onClick={() => handleDeleteHighlight(highlight.id)}
-                        className="text-muted-foreground hover:text-danger opacity-0 group-hover:opacity-100 transition-all duration-200"
+                        className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all duration-200"
                         title="Excluir"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -585,6 +901,42 @@ export default function BookDetailsPage() {
           </aside>
         </div>
       </div>
+
+      {/* Delete session confirmation dialog */}
+      <Dialog
+        open={!!deletingSessionId}
+        onOpenChange={(open) => {
+          if (!open) setDeletingSessionId(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir sessão?</DialogTitle>
+            <DialogDescription>
+              Esta ação não pode ser desfeita. O progresso do livro será
+              ajustado automaticamente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                const session = sessions.find(
+                  (s) => s.id === deletingSessionId
+                );
+                if (session) {
+                  handleDeleteSession(session.id, session.pages_read);
+                }
+              }}
+            >
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
