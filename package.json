@@ -14,7 +14,9 @@
     "format": "biome format --write .",
     "web:dev": "turbo dev --filter=@marcapagina/web",
     "mobile:dev": "turbo dev --filter=@marcapagina/mobile",
-    "shared:build": "turbo build --filter=@marcapagina/shared"
+    "shared:build": "turbo build --filter=@marcapagina/shared",
+    "test": "turbo test",
+    "test:shared": "turbo test --filter=@marcapagina/shared"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.7",

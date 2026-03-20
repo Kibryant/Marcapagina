@@ -4,6 +4,10 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",
     "clsx": "^2.1.1",
@@ -11,6 +15,7 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.0"
   }
 }
