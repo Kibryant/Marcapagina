@@ -1,5 +1,6 @@
 import { cn } from '@marcapagina/shared';
 import { BookMarked, Heart } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
@@ -9,11 +10,26 @@ type BookStatus = 'reading' | 'paused' | 'finished' | 'wishlist' | 'next';
 interface BookCardProps {
   id: string;
   title: string;
-  author?: string;
+  author?: string | null;
   current_page: number;
   total_pages: number;
   status: BookStatus;
+  category?: string | null;
+  cover_url?: string | null;
 }
+
+const CATEGORY_LABELS: Record<string, string> = {
+  ficcao: '📖 Ficção',
+  'nao-ficcao': '📘 Não-ficção',
+  tech: '💻 Tech',
+  negocios: '💼 Negócios',
+  autoajuda: '🌱 Autoajuda',
+  biografia: '👤 Biografia',
+  fantasia: '🐉 Fantasia',
+  romance: '💕 Romance',
+  suspense: '🔍 Suspense',
+  academico: '🎓 Acadêmico',
+};
 
 const STATUS_CONFIG: Record<BookStatus, { label: string; className: string }> =
   {
@@ -34,6 +50,8 @@ export function BookCard({
   current_page,
   total_pages,
   status,
+  category,
+  cover_url,
 }: BookCardProps) {
   const progress =
     total_pages > 0
@@ -47,57 +65,75 @@ export function BookCard({
     <Link href={`/app/books/${id}`}>
       <Card className="hover:border-primary/50 transition-colors cursor-pointer overflow-hidden border">
         <CardContent className="p-4">
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex-1 min-w-0 pr-3">
-              <h3 className="font-semibold text-lg leading-tight line-clamp-1">
-                {title}
-              </h3>
-              {author && (
-                <p className="text-sm text-muted-foreground line-clamp-1">
-                  {author}
-                </p>
+          <div className="flex gap-3">
+            {cover_url && (
+              <Image
+                src={cover_url}
+                alt={title}
+                width={48}
+                height={64}
+                className="object-cover rounded shrink-0 self-start"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex-1 min-w-0 pr-3">
+                  <h3 className="font-semibold text-lg leading-tight line-clamp-1">
+                    {title}
+                  </h3>
+                  {author && (
+                    <p className="text-sm text-muted-foreground line-clamp-1">
+                      {author}
+                    </p>
+                  )}
+                  {category && CATEGORY_LABELS[category] && (
+                    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground mt-1">
+                      {CATEGORY_LABELS[category]}
+                    </span>
+                  )}
+                </div>
+                <div
+                  className={cn(
+                    'shrink-0 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider',
+                    config.className
+                  )}
+                >
+                  {config.label}
+                </div>
+              </div>
+
+              {showProgress ? (
+                <div className="space-y-2 mt-4">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span className="text-muted-foreground">Progresso</span>
+                    <span>{progress}%</span>
+                  </div>
+                  <ProgressBar
+                    value={progress}
+                    indicatorClassName={
+                      status === 'finished' ? 'bg-success' : 'bg-primary'
+                    }
+                  />
+                  <div className="text-[11px] text-muted-foreground text-right font-medium">
+                    {current_page} / {total_pages} págs
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+                  {status === 'wishlist' ? (
+                    <Heart className="h-3.5 w-3.5 text-purple-500/60" />
+                  ) : (
+                    <BookMarked className="h-3.5 w-3.5 text-sky-500/60" />
+                  )}
+                  <span>
+                    {total_pages > 0
+                      ? `${total_pages} páginas`
+                      : 'Páginas não informadas'}
+                  </span>
+                </div>
               )}
-            </div>
-            <div
-              className={cn(
-                'shrink-0 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider',
-                config.className
-              )}
-            >
-              {config.label}
             </div>
           </div>
-
-          {showProgress ? (
-            <div className="space-y-2 mt-4">
-              <div className="flex justify-between text-xs font-medium">
-                <span className="text-muted-foreground">Progresso</span>
-                <span>{progress}%</span>
-              </div>
-              <ProgressBar
-                value={progress}
-                indicatorClassName={
-                  status === 'finished' ? 'bg-success' : 'bg-primary'
-                }
-              />
-              <div className="text-[11px] text-muted-foreground text-right font-medium">
-                {current_page} / {total_pages} págs
-              </div>
-            </div>
-          ) : (
-            <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-              {status === 'wishlist' ? (
-                <Heart className="h-3.5 w-3.5 text-purple-500/60" />
-              ) : (
-                <BookMarked className="h-3.5 w-3.5 text-sky-500/60" />
-              )}
-              <span>
-                {total_pages > 0
-                  ? `${total_pages} páginas`
-                  : 'Páginas não informadas'}
-              </span>
-            </div>
-          )}
         </CardContent>
       </Card>
     </Link>
