@@ -24,8 +24,10 @@ export interface Book {
   total_pages: number;
   current_page: number;
   status: 'reading' | 'wishlist' | 'next' | 'finished';
+  category: string | null;
   rating: number | null;
   summary: string | null;
+  cover_url: string | null;
   created_at: string;
   updated_at: string;
 }
