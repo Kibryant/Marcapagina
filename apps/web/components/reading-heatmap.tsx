@@ -112,9 +112,9 @@ export function ReadingHeatmap({ sessions, days = 180 }: ReadingHeatmapProps) {
           {/* Months Header */}
           <div className="flex mb-2 h-4 relative">
             <div className="w-8 shrink-0" /> {/* Spacer for week labels */}
-            {monthLabels.map((label, i) => (
+            {monthLabels.map((label) => (
               <div
-                key={i}
+                key={`${label.index}-${label.name}`}
                 className="absolute text-[10px] font-bold text-muted-foreground uppercase tracking-tighter"
                 style={{ left: `${label.index * 14}px` }}
               >
@@ -126,9 +126,12 @@ export function ReadingHeatmap({ sessions, days = 180 }: ReadingHeatmapProps) {
           <div className="flex gap-1.5">
             {/* Week Labels */}
             <div className="flex flex-col gap-1 justify-between py-0.5">
-              {weekLabels.map((label, i) => (
+              {weekLabels.map((label, index) => (
                 <div
-                  key={i}
+                  key={`week-label-${
+                    // biome-ignore lint/suspicious/noArrayIndexKey: index is stable here since labels are static and ordered by week day
+                    index
+                  }`}
                   className="h-2.5 w-8 text-[9px] font-medium text-muted-foreground leading-none flex items-center"
                 >
                   {label}
@@ -139,10 +142,19 @@ export function ReadingHeatmap({ sessions, days = 180 }: ReadingHeatmapProps) {
             {/* Heatmap Grid */}
             <div className="flex gap-1">
               {heatmapData.map((week, weekIndex) => (
-                <div key={weekIndex} className="flex flex-col gap-1">
+                <div
+                  key={`week-${
+                    // biome-ignore lint/suspicious/noArrayIndexKey: each week is stable here since data is static and ordered by date
+                    weekIndex + 1
+                  }`}
+                  className="flex flex-col gap-1"
+                >
                   {week.map((dayData, dayIndex) => (
                     <div
-                      key={dayIndex}
+                      key={`day-${
+                        // biome-ignore lint/suspicious/noArrayIndexKey: each day is stable here since data is static and ordered by date
+                        dayIndex + 1
+                      }`}
                       title={`${dayData.count} páginas em ${format(dayData.day, 'dd/MM/yyyy')}`}
                       className={cn(
                         'w-2.5 h-2.5 rounded-sm transition-all duration-300 hover:ring-2 hover:ring-primary/40 hover:scale-125 cursor-pointer z-10',

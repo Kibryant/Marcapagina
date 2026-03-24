@@ -51,7 +51,7 @@ export function MonthlyChart({ sessions }: MonthlyChartProps) {
   }, [sessions]);
 
   return (
-    <div className="h-[200px] w-full mt-2">
+    <div className="h-50 w-full mt-2">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={chartData}
@@ -106,7 +106,10 @@ export function MonthlyChart({ sessions }: MonthlyChartProps) {
           <Bar dataKey="pages" radius={[6, 6, 0, 0]} barSize={12}>
             {chartData.map((entry, index) => (
               <Cell
-                key={`cell-${index}`}
+                key={`cell-${entry.date}-${
+                  // biome-ignore lint/suspicious/noArrayIndexKey: index is stable here since data is static and ordered by date
+                  index + 1
+                }`}
                 fill="var(--primary)"
                 fillOpacity={entry.isToday ? 1 : 0.3}
                 className="transition-all duration-300 hover:fill-opacity-80"
