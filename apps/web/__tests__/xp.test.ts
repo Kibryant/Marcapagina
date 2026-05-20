@@ -1,14 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
-
-// Mock Supabase client — not needed for pure function tests
-vi.mock('../lib/supabase/client', () => ({ createClient: vi.fn() }));
+import { describe, expect, it } from 'vitest';
 
 import {
+  calculateLevel,
+  getXPProgress,
   XP_PER_MINUTE,
   XP_PER_PAGE,
   XP_TO_NEXT_LEVEL,
-  calculateLevel,
-  getXPProgress,
 } from '../lib/xp';
 
 // ─── XP formula constants ─────────────────────────────────────────────────────

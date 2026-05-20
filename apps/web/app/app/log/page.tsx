@@ -5,6 +5,7 @@ import { Book, ChevronLeft, Minus, Plus, Timer } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { z } from 'zod';
 import { AppShell } from '@/components/app-shell';
 import { ReadingTimer } from '@/components/reading-timer';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,8 @@ import { Label } from '@/components/ui/label';
 import { LogReadingLoadingSkeleton } from '@/components/ui/skeletons';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
-import { processReadingXP } from '@/lib/xp';
+
+const MAX_DURATION_MINUTES = 1440;
 
 export default function LogPage() {
   const [books, setBooks] = useState<BookType[]>([]);
@@ -47,85 +49,78 @@ export default function LogPage() {
     fetchBooks();
   }, [supabase]);
 
+  const selectedBook = books.find((b) => b.id === selectedBookId);
+  const remainingPages = selectedBook
+    ? Math.max(0, selectedBook.total_pages - selectedBook.current_page)
+    : 0;
+
   const handleSave = async () => {
     if (!selectedBookId) return;
-    setLoading(true);
 
-    const book = books.find((b) => b.id === selectedBookId);
-    if (!book) {
-      setLoading(false);
-      return;
-    }
-
-    const newCurrentPage = Math.min(
-      book.total_pages,
-      book.current_page + pagesRead
-    );
-    const isFinished = newCurrentPage === book.total_pages;
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    // 1. Create session
-    const { error: sessionError } = await supabase
-      .from('reading_sessions')
-      .insert({
-        user_id: user?.id,
-        book_id: selectedBookId,
-        pages_read: pagesRead,
-        duration_minutes: duration,
-        date: new Date().toISOString().split('T')[0],
-      });
-
-    if (sessionError) {
-      alert(`Erro ao salvar sessão: ${sessionError.message}`);
-      setLoading(false);
-      return;
-    }
-
-    // 2. Update book
-    const { error: bookError } = await supabase
-      .from('books')
-      .update({
-        current_page: newCurrentPage,
-        status: isFinished ? 'finished' : book.status,
+    const validation = z
+      .object({
+        pagesRead: z
+          .number()
+          .int()
+          .min(1, 'Registre ao menos 1 página.')
+          .max(
+            remainingPages,
+            `Faltam só ${remainingPages} página(s) neste livro.`
+          ),
+        duration: z
+          .number()
+          .int()
+          .min(0, 'A duração não pode ser negativa.')
+          .max(MAX_DURATION_MINUTES, 'A duração máxima é 1440 min (24h).'),
       })
-      .eq('id', selectedBookId);
+      .safeParse({ pagesRead, duration });
 
-    if (bookError) {
-      alert(`Erro ao atualizar livro: ${bookError.message}`);
-      setLoading(false);
-      return;
-    }
-
-    // 3. Process XP and Achievements
-    try {
-      if (user?.id) {
-        const result = await processReadingXP(user.id, pagesRead, duration);
-
-        let message = `+${result.xpGained} XP acumulados!`;
-        if (result.leveledUp) {
-          message += ` 🎉 SUBIU PARA O NÍVEL ${result.newLevel}!`;
-        }
-        if (result.newAchievements.length > 0) {
-          message += ` 🏆 Nova conquista: ${result.newAchievements.join(', ')}!`;
-        }
-
-        toast({
-          title: 'Leitura registrada!',
-          description: message,
-        });
-      }
-    } catch (xpError) {
-      console.error('Error processing XP:', xpError);
+    if (!validation.success) {
       toast({
-        title: 'Leitura registrada!',
-        description:
-          'Sua leitura foi salva, mas houve um erro ao processar o XP.',
+        title: 'Verifique os dados',
+        description: validation.error.issues[0].message,
         variant: 'destructive',
       });
+      return;
     }
+
+    setLoading(true);
+
+    const { data, error } = await supabase.rpc('log_reading_session', {
+      p_book_id: selectedBookId,
+      p_pages_read: pagesRead,
+      p_duration_minutes: duration,
+    });
+
+    if (error) {
+      toast({
+        title: 'Erro ao registrar leitura',
+        description: error.message,
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    const result = data as {
+      xpGained: number;
+      leveledUp: boolean;
+      newLevel: number;
+      newAchievements: string[];
+    };
+
+    let message = `+${result.xpGained} XP acumulados!`;
+    if (result.leveledUp) {
+      message += ` 🎉 SUBIU PARA O NÍVEL ${result.newLevel}!`;
+    }
+    if (result.newAchievements.length > 0) {
+      message += ` 🏆 Nova conquista: ${result.newAchievements.join(', ')}!`;
+    }
+
+    toast({
+      title: 'Leitura registrada!',
+      description: message,
+    });
 
     router.push('/app');
     router.refresh();
@@ -167,7 +162,7 @@ export default function LogPage() {
         {showTimer && (
           <ReadingTimer
             onStop={(mins) => {
-              setDuration(mins);
+              setDuration(Math.min(MAX_DURATION_MINUTES, mins));
               setShowTimer(false);
             }}
           />
@@ -183,7 +178,16 @@ export default function LogPage() {
                     <button
                       key={book.id}
                       type="button"
-                      onClick={() => setSelectedBookId(book.id)}
+                      onClick={() => {
+                        setSelectedBookId(book.id);
+                        const remaining = Math.max(
+                          0,
+                          book.total_pages - book.current_page
+                        );
+                        setPagesRead((current) =>
+                          remaining > 0 ? Math.min(current, remaining) : 1
+                        );
+                      }}
                       className={cn(
                         'flex items-center justify-between p-3 rounded-xl border text-left transition-colors',
                         selectedBookId === book.id
@@ -236,11 +240,21 @@ export default function LogPage() {
                   variant="outline"
                   size="icon"
                   className="h-12 w-12 rounded-full border-border/50"
-                  onClick={() => setPagesRead(pagesRead + 1)}
+                  onClick={() =>
+                    setPagesRead(Math.min(remainingPages, pagesRead + 1))
+                  }
+                  disabled={pagesRead >= remainingPages}
                 >
                   <Plus className="h-6 w-6" />
                 </Button>
               </div>
+              {selectedBook && (
+                <p className="text-center text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {remainingPages > 0
+                    ? `${remainingPages} página(s) restantes`
+                    : 'Este livro já está no fim'}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -255,9 +269,15 @@ export default function LogPage() {
                   id="duration"
                   type="number"
                   min="0"
+                  max={MAX_DURATION_MINUTES}
                   value={duration}
                   onChange={(e) =>
-                    setDuration(parseInt(e.target.value, 10) || 0)
+                    setDuration(
+                      Math.min(
+                        MAX_DURATION_MINUTES,
+                        Math.max(0, parseInt(e.target.value, 10) || 0)
+                      )
+                    )
                   }
                   className="text-center font-mono"
                 />
@@ -272,7 +292,7 @@ export default function LogPage() {
             <Button
               className="w-full h-14 text-base font-bold rounded-xl shadow-lg shadow-primary/20"
               onClick={handleSave}
-              disabled={loading || !selectedBookId}
+              disabled={loading || !selectedBookId || remainingPages === 0}
             >
               {loading ? 'Salvando...' : 'Finalizar Registro'}
             </Button>

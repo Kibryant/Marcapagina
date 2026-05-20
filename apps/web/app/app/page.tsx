@@ -31,6 +31,7 @@ import {
   getHabitRecommendations,
 } from '@/lib/recommendations';
 import { createClient } from '@/lib/supabase/server';
+import { getXPProgress, XP_TO_NEXT_LEVEL } from '@/lib/xp';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -79,8 +80,7 @@ export default async function DashboardPage() {
   // XP Progress
   const xp = profile?.xp || 0;
   const level = profile?.level || 1;
-  const xpToNextLevel = 1000;
-  const xpProgress = Math.round(((xp % xpToNextLevel) / xpToNextLevel) * 100);
+  const xpProgress = getXPProgress(xp);
 
   return (
     <AppShell>
@@ -107,7 +107,7 @@ export default async function DashboardPage() {
               <div className="flex justify-between text-[8px] font-bold text-muted-foreground uppercase">
                 <span>XP</span>
                 <span>
-                  {xp % xpToNextLevel} / {xpToNextLevel}
+                  {xp % XP_TO_NEXT_LEVEL} / {XP_TO_NEXT_LEVEL}
                 </span>
               </div>
               <ProgressBar value={xpProgress} className="h-1 bg-primary/10" />
