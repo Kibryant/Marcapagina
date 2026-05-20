@@ -8,7 +8,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@marcapagina/shared': path.resolve(__dirname, '../../packages/shared/index.ts'),
+      '@marcapagina/shared': path.resolve(
+        __dirname,
+        '../../packages/shared/index.ts'
+      ),
     },
   },
 });

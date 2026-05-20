@@ -1,10 +1,3 @@
-import { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
 import {
   type Book,
   getTodayPages,
@@ -15,6 +8,13 @@ import {
   ChevronRight,
   Timer as TimerIcon,
 } from 'lucide-react-native';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import { ReadingTimer } from '@/components/ReadingTimer';
 import { Text, View } from '@/components/Themed';
 import { AnimatedHeaderPage } from '@/components/ui/AnimatedHeaderPage';

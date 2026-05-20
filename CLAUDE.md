@@ -27,7 +27,12 @@ npm run lint:fix     # Auto-fix lint issues
 npm run format       # Format with Biome
 ```
 
-No test suite exists in this codebase.
+### Testing
+```bash
+npm run test         # Run all tests via Turbo (Vitest)
+npm run test:shared  # Shared package tests only
+```
+Tests use **Vitest**: pure logic in `packages/shared/__tests__/` and `apps/web/__tests__/`.
 
 ## Architecture
 
@@ -47,13 +52,13 @@ Key tables: `profiles`, `books`, `reading_sessions`, `goals`, `achievements`, `u
 Supabase Auth with `@supabase/ssr` for cookie-based session management. Protected routes live under `app/app/*`. The server client wraps cookies automatically — always use `lib/supabase/server.ts` in Server Components and `lib/supabase/client.ts` in Client Components.
 
 ### Gamification System
-XP and level logic lives in `apps/web/lib/xp.ts`. Formula: pages × 10 + minutes × 5. Achievement triggers fire via `processReadingXP()` after each session log.
+XP/level helper functions (formula: pages × 10 + minutes × 5, 1000 XP per level) live in `apps/web/lib/xp.ts`. Session logging, XP, level-up, and achievement processing run atomically server-side via the `log_reading_session` Postgres RPC (see `supabase/migrations/`).
 
 ### Shared Metric Functions (`packages/shared/`)
 Pure functions consumed by both web and mobile: `getStreak()`, `getMonthPages()`, `getMonthPace()`, `getTodayPages()`, `getDailyGoalProgress()`. These must remain platform-agnostic.
 
 ### Key Conventions
-- **Biome** is used for linting/formatting (not ESLint/Prettier for the most part). Single quotes in JS, double quotes in JSX. 2-space indent.
+- **Biome** is used for linting/formatting across the whole monorepo (no ESLint/Prettier). Single quotes in JS, double quotes in JSX. 2-space indent.
 - **Tailwind CSS v4** — configured via PostCSS, no `tailwind.config.js`.
 - **shadcn/ui** components live in `apps/web/components/ui/` — prefer editing these over replacing them.
 - **Server Components by default** — only add `"use client"` when truly needed (event handlers, browser APIs, hooks).
@@ -64,5 +69,5 @@ Pure functions consumed by both web and mobile: `getStreak()`, `getMonthPages()`
 Configure in `apps/web/.env`:
 ```
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
 ```

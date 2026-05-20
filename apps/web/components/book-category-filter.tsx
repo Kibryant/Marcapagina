@@ -90,7 +90,9 @@ export function BookCategoryFilter({ books }: BookCategoryFilterProps) {
   );
 
   const filteredBooks = books.filter((b) => {
-    const matchesCategory = activeCategory ? b.category === activeCategory : true;
+    const matchesCategory = activeCategory
+      ? b.category === activeCategory
+      : true;
     const matchesSearch = searchQuery
       ? b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         b.author?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -131,7 +133,9 @@ export function BookCategoryFilter({ books }: BookCategoryFilterProps) {
               key={cat.value}
               type="button"
               onClick={() =>
-                setActiveCategory(activeCategory === cat.value ? null : cat.value)
+                setActiveCategory(
+                  activeCategory === cat.value ? null : cat.value
+                )
               }
               className={cn(
                 'text-xs font-bold px-3 py-1.5 rounded-full transition-all border',

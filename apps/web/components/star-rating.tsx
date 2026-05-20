@@ -29,7 +29,7 @@ export function StarRating({
   const iconSize = sizeMap[size];
 
   return (
-    <div
+    <fieldset
       className="flex items-center gap-0.5"
       onMouseLeave={() => !readOnly && setHovered(null)}
       aria-label={`Nota: ${value ?? 'sem avaliação'}`}
@@ -63,6 +63,6 @@ export function StarRating({
           </button>
         );
       })}
-    </div>
+    </fieldset>
   );
 }

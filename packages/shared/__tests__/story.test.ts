@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { generateStoryData } from '../index';
 import type { Book, ReadingSession } from '../index';
+import { generateStoryData } from '../index';
 
 // Freeze time at 2026-03-20 (Friday, day 20 of March)
 const FAKE_NOW = new Date('2026-03-20T12:00:00.000Z');
@@ -18,7 +18,11 @@ afterAll(() => {
 
 let _id = 0;
 
-function session(date: string, pages: number, created_at?: string): ReadingSession {
+function session(
+  date: string,
+  pages: number,
+  created_at?: string
+): ReadingSession {
   return {
     id: `session-${++_id}`,
     user_id: 'user-1',
@@ -80,20 +84,14 @@ describe('generateStoryData — monthly pages', () => {
 
   it('calculates positive monthComparisonPercent when reading increased', () => {
     // 150 this month vs 100 last month → +50%
-    const sessions = [
-      session('2026-03-10', 150),
-      session('2026-02-10', 100),
-    ];
+    const sessions = [session('2026-03-10', 150), session('2026-02-10', 100)];
     const result = generateStoryData(sessions, []);
     expect(result.monthComparisonPercent).toBe(50);
   });
 
   it('calculates negative monthComparisonPercent when reading decreased', () => {
     // 50 this month vs 100 last month → -50%
-    const sessions = [
-      session('2026-03-10', 50),
-      session('2026-02-10', 100),
-    ];
+    const sessions = [session('2026-03-10', 50), session('2026-02-10', 100)];
     const result = generateStoryData(sessions, []);
     expect(result.monthComparisonPercent).toBe(-50);
   });
@@ -117,8 +115,8 @@ describe('generateStoryData — best day of week', () => {
     // 2026-03-20 is a Friday (sexta-feira), 2026-03-19 is Thursday (quinta-feira)
     const sessions = [
       session('2026-03-20', 100), // Friday
-      session('2026-03-19', 20),  // Thursday
-      session('2026-03-18', 20),  // Wednesday
+      session('2026-03-19', 20), // Thursday
+      session('2026-03-18', 20), // Wednesday
     ];
     const result = generateStoryData(sessions, []);
     expect(result.bestDayName).toBe('sexta-feira');
@@ -172,7 +170,12 @@ describe('generateStoryData — finished books', () => {
   });
 
   it('counts only books with status "finished"', () => {
-    const books = [book('finished'), book('finished'), book('reading'), book('wishlist')];
+    const books = [
+      book('finished'),
+      book('finished'),
+      book('reading'),
+      book('wishlist'),
+    ];
     const result = generateStoryData([], books);
     expect(result.finishedBooksCount).toBe(2);
   });

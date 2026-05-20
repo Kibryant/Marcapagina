@@ -17,7 +17,9 @@ export default async function StoryPage() {
 
   const { data: sessions } = await supabase
     .from('reading_sessions')
-    .select('id, user_id, book_id, date, pages_read, duration_minutes, created_at')
+    .select(
+      'id, user_id, book_id, date, pages_read, duration_minutes, created_at'
+    )
     .eq('user_id', user?.id)
     .order('date', { ascending: false });
 
@@ -41,7 +43,10 @@ export default async function StoryPage() {
 
   const achievementList = (allAchievements || []) as Achievement[];
   const unlockedMap = new Map(
-    (unlockedAchievements || []).map((ua) => [ua.achievement_id, ua.unlocked_at])
+    (unlockedAchievements || []).map((ua) => [
+      ua.achievement_id,
+      ua.unlocked_at,
+    ])
   );
 
   const storyData = generateStoryData(sessionList, bookList);
@@ -107,7 +112,9 @@ export default async function StoryPage() {
             <StoryCard
               title="Sequência atual"
               value={`${streak} ${streak === 1 ? 'dia' : 'dias'}`}
-              description={streak > 0 ? 'Mantenha o fogo aceso.' : 'Comece hoje.'}
+              description={
+                streak > 0 ? 'Mantenha o fogo aceso.' : 'Comece hoje.'
+              }
               icon={<Flame className="h-4 w-4" />}
             />
 
@@ -134,13 +141,17 @@ export default async function StoryPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <StoryCard
               title="Dia favorito"
-              value={storyData.bestDayName.replace(/^\w/, (c: string) => c.toUpperCase())}
+              value={storyData.bestDayName.replace(/^\w/, (c: string) =>
+                c.toUpperCase()
+              )}
               description="O dia da semana em que você mais lê."
               icon={<Calendar className="h-4 w-4" />}
             />
             <StoryCard
               title="Horário forte"
-              value={storyData.bestTimeName.replace(/^\w/, (c: string) => c.toUpperCase())}
+              value={storyData.bestTimeName.replace(/^\w/, (c: string) =>
+                c.toUpperCase()
+              )}
               description="O período do dia em que você acumula mais páginas."
               icon={<Clock className="h-4 w-4" />}
             />

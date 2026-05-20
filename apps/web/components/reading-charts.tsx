@@ -63,11 +63,17 @@ function CustomTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className={`${isDark ? 'bg-[#1a1c1e] border-white/10' : 'bg-white border-gray-200'} border rounded-xl px-4 py-2.5 shadow-xl`}>
-      <p className={`text-[10px] ${isDark ? 'text-white/50' : 'text-gray-400'} font-bold uppercase tracking-widest mb-0.5`}>
+    <div
+      className={`${isDark ? 'bg-[#1a1c1e] border-white/10' : 'bg-white border-gray-200'} border rounded-xl px-4 py-2.5 shadow-xl`}
+    >
+      <p
+        className={`text-[10px] ${isDark ? 'text-white/50' : 'text-gray-400'} font-bold uppercase tracking-widest mb-0.5`}
+      >
         {label}
       </p>
-      <p className={`text-sm font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>
+      <p
+        className={`text-sm font-black ${isDark ? 'text-white' : 'text-gray-900'}`}
+      >
         {payload[0].value.toLocaleString('pt-BR')} {suffix}
       </p>
     </div>
@@ -244,7 +250,9 @@ export function ReadingCharts({ sessions }: ReadingChartsProps) {
               tick={{ fontSize: 10, fill: colors.tick }}
               width={35}
             />
-            <Tooltip content={<CustomTooltip suffix="páginas" isDark={isDark} />} />
+            <Tooltip
+              content={<CustomTooltip suffix="páginas" isDark={isDark} />}
+            />
             <Area
               type="monotone"
               dataKey="pages"

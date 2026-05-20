@@ -6,17 +6,60 @@ interface CategoryBreakdownProps {
   books: Book[];
 }
 
-const CATEGORIES: Record<string, { label: string; colorClass: string; bgClass: string }> = {
-  ficcao: { label: '📖 Ficção', colorClass: 'bg-primary', bgClass: 'bg-primary/10 text-primary' },
-  'nao-ficcao': { label: '📘 Não-ficção', colorClass: 'bg-blue-500', bgClass: 'bg-blue-500/10 text-blue-500' },
-  tech: { label: '💻 Tech', colorClass: 'bg-emerald-500', bgClass: 'bg-emerald-500/10 text-emerald-500' },
-  negocios: { label: '💼 Negócios', colorClass: 'bg-amber-500', bgClass: 'bg-amber-500/10 text-amber-500' },
-  autoajuda: { label: '🌱 Autoajuda', colorClass: 'bg-lime-500', bgClass: 'bg-lime-500/10 text-lime-500' },
-  biografia: { label: '👤 Biografia', colorClass: 'bg-indigo-500', bgClass: 'bg-indigo-500/10 text-indigo-500' },
-  fantasia: { label: '🐉 Fantasia', colorClass: 'bg-violet-500', bgClass: 'bg-violet-500/10 text-violet-500' },
-  romance: { label: '💕 Romance', colorClass: 'bg-pink-500', bgClass: 'bg-pink-500/10 text-pink-500' },
-  suspense: { label: '🔍 Suspense', colorClass: 'bg-stone-500', bgClass: 'bg-stone-500/10 text-stone-500' },
-  academico: { label: '🎓 Acadêmico', colorClass: 'bg-cyan-500', bgClass: 'bg-cyan-500/10 text-cyan-500' },
+const CATEGORIES: Record<
+  string,
+  { label: string; colorClass: string; bgClass: string }
+> = {
+  ficcao: {
+    label: '📖 Ficção',
+    colorClass: 'bg-primary',
+    bgClass: 'bg-primary/10 text-primary',
+  },
+  'nao-ficcao': {
+    label: '📘 Não-ficção',
+    colorClass: 'bg-blue-500',
+    bgClass: 'bg-blue-500/10 text-blue-500',
+  },
+  tech: {
+    label: '💻 Tech',
+    colorClass: 'bg-emerald-500',
+    bgClass: 'bg-emerald-500/10 text-emerald-500',
+  },
+  negocios: {
+    label: '💼 Negócios',
+    colorClass: 'bg-amber-500',
+    bgClass: 'bg-amber-500/10 text-amber-500',
+  },
+  autoajuda: {
+    label: '🌱 Autoajuda',
+    colorClass: 'bg-lime-500',
+    bgClass: 'bg-lime-500/10 text-lime-500',
+  },
+  biografia: {
+    label: '👤 Biografia',
+    colorClass: 'bg-indigo-500',
+    bgClass: 'bg-indigo-500/10 text-indigo-500',
+  },
+  fantasia: {
+    label: '🐉 Fantasia',
+    colorClass: 'bg-violet-500',
+    bgClass: 'bg-violet-500/10 text-violet-500',
+  },
+  romance: {
+    label: '💕 Romance',
+    colorClass: 'bg-pink-500',
+    bgClass: 'bg-pink-500/10 text-pink-500',
+  },
+  suspense: {
+    label: '🔍 Suspense',
+    colorClass: 'bg-stone-500',
+    bgClass: 'bg-stone-500/10 text-stone-500',
+  },
+  academico: {
+    label: '🎓 Acadêmico',
+    colorClass: 'bg-cyan-500',
+    bgClass: 'bg-cyan-500/10 text-cyan-500',
+  },
 };
 
 export function CategoryBreakdown({ books }: CategoryBreakdownProps) {
@@ -48,7 +91,9 @@ export function CategoryBreakdown({ books }: CategoryBreakdownProps) {
             <Tag className="h-4 w-4" />
           </div>
           <div>
-            <CardTitle className="text-sm font-bold">Onde você mais lê</CardTitle>
+            <CardTitle className="text-sm font-bold">
+              Onde você mais lê
+            </CardTitle>
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
               Categorias favoritas
             </p>
@@ -82,14 +127,28 @@ export function CategoryBreakdown({ books }: CategoryBreakdownProps) {
               const percentage = Math.round((count / totalCategorized) * 100);
 
               return (
-                <div key={cat} className="flex items-center justify-between text-sm">
+                <div
+                  key={cat}
+                  className="flex items-center justify-between text-sm"
+                >
                   <div className="flex items-center gap-2">
-                    <div className={cn('w-2 h-2 rounded-full', config.colorClass)} />
-                    <span className="font-medium text-foreground text-xs">{config.label}</span>
+                    <div
+                      className={cn('w-2 h-2 rounded-full', config.colorClass)}
+                    />
+                    <span className="font-medium text-foreground text-xs">
+                      {config.label}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-muted-foreground">{count}</span>
-                    <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center justify-center min-w-[32px]', config.bgClass)}>
+                    <span className="text-xs font-bold text-muted-foreground">
+                      {count}
+                    </span>
+                    <span
+                      className={cn(
+                        'text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center justify-center min-w-[32px]',
+                        config.bgClass
+                      )}
+                    >
                       {percentage}%
                     </span>
                   </div>

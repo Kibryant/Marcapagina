@@ -94,8 +94,11 @@ export function ProfilePictureUpload({
         </Avatar>
 
         {/* Overlay Hover */}
-        <div
-          onClick={() => !uploading && fileInputRef.current?.click()}
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => fileInputRef.current?.click()}
+          aria-label="Trocar foto de perfil"
           className={`absolute inset-0 flex items-center justify-center rounded-full bg-black/40 text-white opacity-0 transition-opacity cursor-pointer ${uploading ? 'opacity-100' : 'group-hover:opacity-100'}`}
         >
           {uploading ? (
@@ -103,7 +106,7 @@ export function ProfilePictureUpload({
           ) : (
             <Camera className="h-6 w-6" />
           )}
-        </div>
+        </button>
       </div>
 
       <div className="text-center sm:text-left space-y-2">

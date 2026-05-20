@@ -182,6 +182,7 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
 
         <div className="grid grid-cols-3 gap-3">
           <button
+            type="button"
             onClick={() => toggleSound('rain')}
             className={cn(
               'flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300',
@@ -202,6 +203,7 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
           </button>
 
           <button
+            type="button"
             onClick={() => toggleSound('cafe')}
             className={cn(
               'flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300',
@@ -222,6 +224,7 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
           </button>
 
           <button
+            type="button"
             onClick={() => toggleSound('library')}
             className={cn(
               'flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-300',
@@ -243,6 +246,7 @@ export function ReadingTimer({ onStop, className }: ReadingTimerProps) {
         </div>
       </div>
 
+      {/* biome-ignore lint/a11y/useMediaCaption: áudio ambiente (chuva/café/foco) não tem fala para legendar */}
       <audio
         ref={audioRef}
         src={

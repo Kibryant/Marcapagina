@@ -13,7 +13,6 @@ import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
 
-
 export default async function BooksPage() {
   const supabase = await createClient();
 

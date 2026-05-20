@@ -34,7 +34,11 @@ function TabItem({
 }: {
   isFocused: boolean;
   onPress: () => void;
-  icon?: (props: { color: string; size: number; focused: boolean }) => React.ReactNode;
+  icon?: (props: {
+    color: string;
+    size: number;
+    focused: boolean;
+  }) => React.ReactNode;
   theme: typeof Colors.light;
 }) {
   const progress = useSharedValue(isFocused ? 1 : 0);

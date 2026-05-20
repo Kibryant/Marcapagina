@@ -115,7 +115,9 @@ export function AnimatedHeaderPage<T = any>({
           </TouchableOpacity>
         )}
         <View style={styles.largeTitleRow}>
-          <Text style={[styles.largeTitle, { color: theme.text }]}>{title}</Text>
+          <Text style={[styles.largeTitle, { color: theme.text }]}>
+            {title}
+          </Text>
           <View style={styles.rightAction}>{rightElement}</View>
         </View>
         {subtitle && (

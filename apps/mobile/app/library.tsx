@@ -166,7 +166,9 @@ export default function LibraryScreen() {
 
   if (loading && !refreshing) {
     return (
-      <View style={[styles.container, styles.center, { backgroundColor: theme.bg }]}>
+      <View
+        style={[styles.container, styles.center, { backgroundColor: theme.bg }]}
+      >
         <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );

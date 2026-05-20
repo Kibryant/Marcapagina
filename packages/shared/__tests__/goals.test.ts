@@ -56,8 +56,9 @@ describe('calculateGoalsSuggestions', () => {
 
   it('increases the suggestion by 5% when consistency is moderate (4–7 days in 14)', () => {
     // 5 days of reading in the last 14
-    const sessions: ReadingSession[] = Array.from({ length: 5 }, (_, i) =>
-      session(i * 2, 20) // every other day
+    const sessions: ReadingSession[] = Array.from(
+      { length: 5 },
+      (_, i) => session(i * 2, 20) // every other day
     );
     const result = calculateGoalsSuggestions(sessions, 100);
 

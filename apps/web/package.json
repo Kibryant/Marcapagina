@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "biome check .",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -39,8 +39,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/recharts": "^1.8.29",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
     "lightningcss": "^1.31.1",
     "shadcn": "^3.8.5",
     "tailwindcss": "^4",

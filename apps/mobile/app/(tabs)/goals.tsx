@@ -190,21 +190,23 @@ export default function GoalsScreen() {
         >
           {goal && (
             <FadeInView delay={100} duration={600}>
-              <Text style={[styles.sectionTitle, { color: theme.mutedForeground }]}>
+              <Text
+                style={[styles.sectionTitle, { color: theme.mutedForeground }]}
+              >
                 PROGRESSO ATUAL
               </Text>
-            <GoalCard
-              title="Meta Diária"
-              currentValue={todayPages}
-              goalValue={goal.daily_pages || 0}
-              unit="pág"
-            />
-            <GoalCard
-              title="Meta Mensal"
-              currentValue={currentMonthPages}
-              goalValue={goal.monthly_pages || 0}
-              unit="pág"
-            />
+              <GoalCard
+                title="Meta Diária"
+                currentValue={todayPages}
+                goalValue={goal.daily_pages || 0}
+                unit="pág"
+              />
+              <GoalCard
+                title="Meta Mensal"
+                currentValue={currentMonthPages}
+                goalValue={goal.monthly_pages || 0}
+                unit="pág"
+              />
             </FadeInView>
           )}
 

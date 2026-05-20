@@ -489,12 +489,18 @@ export default function BookDetailsPage() {
                           </SelectItem>
                           <SelectItem value="tech">💻 Tecnologia</SelectItem>
                           <SelectItem value="negocios">💼 Negócios</SelectItem>
-                          <SelectItem value="autoajuda">🌱 Autoajuda</SelectItem>
-                          <SelectItem value="biografia">👤 Biografia</SelectItem>
+                          <SelectItem value="autoajuda">
+                            🌱 Autoajuda
+                          </SelectItem>
+                          <SelectItem value="biografia">
+                            👤 Biografia
+                          </SelectItem>
                           <SelectItem value="fantasia">🐉 Fantasia</SelectItem>
                           <SelectItem value="romance">💕 Romance</SelectItem>
                           <SelectItem value="suspense">🔍 Suspense</SelectItem>
-                          <SelectItem value="academico">🎓 Acadêmico</SelectItem>
+                          <SelectItem value="academico">
+                            🎓 Acadêmico
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -795,9 +801,7 @@ export default function BookDetailsPage() {
                           </button>
                           <button
                             type="button"
-                            onClick={() =>
-                              setDeletingSessionId(session.id)
-                            }
+                            onClick={() => setDeletingSessionId(session.id)}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                             title="Excluir"
                           >

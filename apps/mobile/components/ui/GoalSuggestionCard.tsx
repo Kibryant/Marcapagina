@@ -31,13 +31,22 @@ export function GoalSuggestionCard({
       ]}
     >
       <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: theme.primary + '20' }]}>
+        <View
+          style={[
+            styles.iconContainer,
+            { backgroundColor: theme.primary + '20' },
+          ]}
+        >
           <Zap size={20} color={theme.primary} />
         </View>
-        <Text style={[styles.title, { color: theme.text }]}>Recomendação da IA</Text>
+        <Text style={[styles.title, { color: theme.text }]}>
+          Recomendação da IA
+        </Text>
       </View>
 
-      <Text style={[styles.reason, { color: theme.mutedForeground }]}>{reason}</Text>
+      <Text style={[styles.reason, { color: theme.mutedForeground }]}>
+        {reason}
+      </Text>
 
       <View style={styles.suggestionBox}>
         <View style={styles.suggestionItem}>
@@ -48,7 +57,8 @@ export function GoalSuggestionCard({
         <View style={[styles.divider, { backgroundColor: theme.border }]} />
         <View style={styles.suggestionItem}>
           <Text style={[styles.suggestionValue, { color: theme.text }]}>
-            {suggestedMonthly} <Text style={styles.suggestionUnit}>pág/mês</Text>
+            {suggestedMonthly}{' '}
+            <Text style={styles.suggestionUnit}>pág/mês</Text>
           </Text>
         </View>
       </View>

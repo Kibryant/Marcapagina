@@ -145,9 +145,9 @@ export default function Home() {
                       { label: 'No Mês', value: '840', sub: 'págs' },
                       { label: 'Ritmo', value: '28', sub: 'p/dia' },
                       { label: 'Streak', value: '15', sub: 'dias' },
-                    ].map((stat, i) => (
+                    ].map((stat) => (
                       <div
-                        key={i}
+                        key={stat.label}
                         className="flex flex-col rounded-xl bg-background/60 p-4 border border-border/40 shadow-sm backdrop-blur-md transition-transform hover:scale-105"
                       >
                         <span className="text-2xl font-black">
@@ -243,9 +243,9 @@ export default function Home() {
                   'hover:border-emerald-500/50 hover:shadow-emerald-500/20',
                 desc: 'Exporte todo o seu histórico a qualquer momento. Seus dados, sua privacidade, seu total controle.',
               },
-            ].map((Feature, i) => (
+            ].map((Feature) => (
               <div
-                key={i}
+                key={Feature.title}
                 className={`group relative p-8 rounded-3xl border border-border/50 bg-surface/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${Feature.border} overflow-hidden`}
               >
                 <div
@@ -281,9 +281,9 @@ export default function Home() {
                   atividade metrificada e divertida.
                 </p>
                 <div className="flex gap-2">
-                  {[...Array(5)].map((_, i) => (
+                  {[0, 1, 2, 3, 4].map((position) => (
                     <Star
-                      key={i}
+                      key={position}
                       className="h-5 w-5 fill-amber-400 text-amber-400"
                     />
                   ))}
@@ -304,9 +304,9 @@ export default function Home() {
                     review:
                       "Eu amo os gráficos mensais. Ver meu 'streak' crescendo me força a abrir pelo menos 10 páginas antes de dormir.",
                   },
-                ].map((t, i) => (
+                ].map((t) => (
                   <div
-                    key={i}
+                    key={t.name}
                     className="p-5 rounded-2xl bg-background shadow-md border border-border/40"
                   >
                     <p className="text-sm italic mb-4">

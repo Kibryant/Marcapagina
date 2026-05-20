@@ -116,10 +116,7 @@ describe('getStreak', () => {
   });
 
   it('starts from yesterday when today has no reading', () => {
-    const sessions = [
-      session('2026-03-19', 10),
-      session('2026-03-18', 10),
-    ];
+    const sessions = [session('2026-03-19', 10), session('2026-03-18', 10)];
     expect(getStreak(sessions)).toBe(2);
   });
 
