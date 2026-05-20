@@ -8,6 +8,7 @@ import {
   LogOut,
   Settings,
   Target,
+  Trophy,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -62,6 +63,7 @@ export function AppShell({ children, hideNav = false }: AppShellProps) {
     { label: 'Livros', href: '/app/books', icon: BookOpen },
     { label: 'Metas', href: '/app/goals', icon: Target },
     { label: 'Histórico', href: '/app/story', icon: History },
+    { label: 'Conquistas', href: '/app/achievements', icon: Trophy },
     { label: 'Ajustes', href: '/app/settings', icon: Settings },
   ];
 
