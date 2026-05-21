@@ -71,3 +71,53 @@ Configure in `apps/web/.env`:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
 ```
+
+**`NEXT_PUBLIC_*` inlining gotcha:** Next.js only inlines *literal*
+`process.env.NEXT_PUBLIC_X` references into the client bundle. Never pass the
+whole `process.env` object to code that runs in the browser (e.g.
+`schema.parse(process.env)`) — the keys come back `undefined` there.
+`lib/client-env.ts` references each key explicitly for this reason.
+
+## Security
+
+- **Never commit secrets.** `.env`, `.env.local`, `*.key`, `*.pem` are
+  gitignored and blocked from Claude's context by a hook. `.env.example` is
+  safe to read and commit.
+- **Supabase keys:** client code may only use the publishable key
+  (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`). The `service_role` key
+  must never reach the browser bundle.
+- **Row Level Security:** every `public` table has RLS enabled and scoped to
+  `auth.uid()`. Never trust a client-supplied `user_id`.
+- **Gamification integrity:** the client must not write `profiles.xp`,
+  `profiles.level` or `user_achievements` directly. All XP/level/achievement
+  changes go through the `log_reading_session` Postgres RPC (`SECURITY
+  DEFINER`); direct writes are revoked for the `authenticated` role.
+- **Postgres functions:** always `set search_path = ''` with fully-qualified
+  names. Use `SECURITY DEFINER` only when required, and validate `auth.uid()`
+  plus row ownership inside.
+- Use the `rls-security-review` skill before applying any database change.
+
+## Claude Code Setup (`.claude/`)
+
+`.claude/` is version-controlled — only `settings.local.json` and
+`skills-lock.json` are gitignored.
+
+- **`settings.json`** — shared permission allowlist/denylist and hooks.
+- **Hooks** (`.claude/hooks/`):
+  - `format.sh` — formats edited JS/TS/JSON/CSS files with Biome (PostToolUse).
+  - `typecheck.sh` — runs `tsc --noEmit` on `apps/web` when a task ends (Stop).
+  - `protect-sensitive.sh` — blocks reading/writing secret files (PreToolUse).
+  - `guard-bash.sh` — blocks destructive shell commands (PreToolUse).
+- **Skills** (`.claude/skills/`): `supabase-migration`, `scaffold-route`,
+  `rls-security-review`.
+- **Commands** (`.claude/commands/`): `/check` runs lint + type-check + tests.
+
+### Conventions for Claude
+
+- Run `/check` before committing.
+- Conventional commit messages (`feat:`, `fix:`, `chore:`, `docs:`, `test:`).
+- User-facing strings are in **Portuguese**; comments explaining "why" are
+  welcome in Portuguese to match the codebase.
+- Database migrations are **never auto-applied** — they are created in
+  `supabase/migrations/` and applied manually by the user.
+- Do not commit or push unless explicitly asked.

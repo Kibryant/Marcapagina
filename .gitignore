@@ -41,5 +41,9 @@ next-env.d.ts
 # Skills Lock
 skills-lock.json
 
-# Claude
-.claude/
+# Claude — versiona a config compartilhada (settings.json, hooks, skills,
+# commands) e ignora apenas o que é pessoal/gerado.
+.claude/settings.local.json
+.claude/skills-lock.json
+# Skill de plugin (gerenciada pelo sistema de plugins, não vendorizar).
+.claude/skills/supabase-postgres-best-practices/
