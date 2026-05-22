@@ -29,10 +29,19 @@ npm run format       # Format with Biome
 
 ### Testing
 ```bash
-npm run test         # Run all tests via Turbo (Vitest)
+npm run test         # Run all unit tests via Turbo (Vitest)
 npm run test:shared  # Shared package tests only
 ```
-Tests use **Vitest**: pure logic in `packages/shared/__tests__/` and `apps/web/__tests__/`.
+Unit tests use **Vitest**: pure logic in `packages/shared/__tests__/`, repository
+tests (mocked Supabase client) in `packages/data/__tests__/`, XP helpers in
+`apps/web/__tests__/`.
+
+**E2E** uses **Playwright** (`apps/web/e2e/`) and runs against a **local
+Supabase stack** — never production:
+```bash
+supabase start && supabase db reset   # local DB + seed (supabase/seed.sql)
+cd apps/web && npm run e2e            # Playwright
+```
 
 ## Architecture
 
