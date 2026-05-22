@@ -1,0 +1,14 @@
+{
+  "name": "@marcapagina/data",
+  "version": "0.1.0",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "private": true,
+  "dependencies": {
+    "@marcapagina/shared": "*",
+    "@supabase/supabase-js": "^2.97.0"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

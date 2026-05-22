@@ -1,4 +1,9 @@
-import type { Achievement, Book, ReadingSession } from '@marcapagina/shared';
+import {
+  listAchievements,
+  listBookStatuses,
+  listSessions,
+  listUserAchievements,
+} from '@marcapagina/data';
 import { generateStoryData, getStreak } from '@marcapagina/shared';
 import { BookOpen, Calendar, Clock, Flame, Target } from 'lucide-react';
 import { AchievementCard } from '@/components/achievement-card';
@@ -14,42 +19,21 @@ export default async function StoryPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const userId = user?.id ?? '';
 
-  const { data: sessions } = await supabase
-    .from('reading_sessions')
-    .select(
-      'id, user_id, book_id, date, pages_read, duration_minutes, created_at'
-    )
-    .eq('user_id', user?.id)
-    .order('date', { ascending: false });
+  const [sessionList, bookStatuses, achievementList, unlockedAchievements] =
+    await Promise.all([
+      listSessions(supabase, userId),
+      listBookStatuses(supabase, userId),
+      listAchievements(supabase),
+      listUserAchievements(supabase, userId),
+    ]);
 
-  const { data: books } = await supabase
-    .from('books')
-    .select('id, status')
-    .eq('user_id', user?.id);
-
-  const sessionList = (sessions || []) as ReadingSession[];
-  const bookList = (books || []) as Book[];
-
-  const { data: allAchievements } = await supabase
-    .from('achievements')
-    .select('*')
-    .order('xp_reward', { ascending: true });
-
-  const { data: unlockedAchievements } = await supabase
-    .from('user_achievements')
-    .select('achievement_id, unlocked_at')
-    .eq('user_id', user?.id);
-
-  const achievementList = (allAchievements || []) as Achievement[];
   const unlockedMap = new Map(
-    (unlockedAchievements || []).map((ua) => [
-      ua.achievement_id,
-      ua.unlocked_at,
-    ])
+    unlockedAchievements.map((ua) => [ua.achievement_id, ua.unlocked_at])
   );
 
-  const storyData = generateStoryData(sessionList, bookList);
+  const storyData = generateStoryData(sessionList, bookStatuses);
   const streak = getStreak(sessionList);
 
   const currentMonthLabel = new Intl.DateTimeFormat('pt-BR', {

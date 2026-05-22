@@ -1,5 +1,6 @@
 'use client';
 
+import { getProfile } from '@marcapagina/data';
 import { cn } from '@marcapagina/shared';
 import {
   BookOpen,
@@ -36,11 +37,7 @@ export function AppShell({ children, hideNav = false }: AppShellProps) {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('theme')
-        .eq('id', user.id)
-        .single();
+      const profile = await getProfile(supabase, user.id);
       if (
         profile?.theme &&
         (profile.theme === 'light' || profile.theme === 'dark')
@@ -49,8 +46,7 @@ export function AppShell({ children, hideNav = false }: AppShellProps) {
       }
     };
     syncTheme();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setTheme, supabase.from, supabase.auth.getUser]);
+  }, [setTheme, supabase]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

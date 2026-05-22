@@ -1,5 +1,10 @@
 'use client';
 
+import {
+  type LogReadingResult,
+  listUnfinishedBooks,
+  logReadingSession,
+} from '@marcapagina/data';
 import { type Book as BookType, cn } from '@marcapagina/shared';
 import { Book, ChevronLeft, Minus, Plus, Timer } from 'lucide-react';
 import Link from 'next/link';
@@ -34,14 +39,9 @@ export default function LogPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      const { data } = await supabase
-        .from('books')
-        .select('*')
-        .eq('user_id', user?.id)
-        .neq('status', 'finished')
-        .order('title');
+      const data = await listUnfinishedBooks(supabase, user?.id ?? '');
 
-      if (data && data.length > 0) {
+      if (data.length > 0) {
         setBooks(data);
         setSelectedBookId(data[0].id);
       }
@@ -86,28 +86,22 @@ export default function LogPage() {
 
     setLoading(true);
 
-    const { data, error } = await supabase.rpc('log_reading_session', {
-      p_book_id: selectedBookId,
-      p_pages_read: pagesRead,
-      p_duration_minutes: duration,
-    });
-
-    if (error) {
+    let result: LogReadingResult;
+    try {
+      result = await logReadingSession(supabase, {
+        bookId: selectedBookId,
+        pagesRead,
+        durationMinutes: duration,
+      });
+    } catch (err) {
       toast({
         title: 'Erro ao registrar leitura',
-        description: error.message,
+        description: err instanceof Error ? err.message : 'Erro inesperado',
         variant: 'destructive',
       });
       setLoading(false);
       return;
     }
-
-    const result = data as {
-      xpGained: number;
-      leveledUp: boolean;
-      newLevel: number;
-      newAchievements: string[];
-    };
 
     let message = `+${result.xpGained} XP acumulados!`;
     if (result.leveledUp) {

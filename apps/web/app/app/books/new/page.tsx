@@ -1,5 +1,6 @@
 'use client';
 
+import { createBook } from '@marcapagina/data';
 import { ChevronLeft, Loader2, Search, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -124,25 +125,17 @@ export default function NewBookPage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from('books').insert({
-      user_id: user?.id,
-      title,
-      author,
-      total_pages: pages,
-      current_page: 0,
-      status,
-      category: category || null,
-      cover_url: coverUrl || null,
-    });
-
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
+    try {
+      await createBook(supabase, {
+        user_id: user?.id ?? '',
+        title,
+        author,
+        total_pages: pages,
+        current_page: 0,
+        status,
+        category: category || null,
+        cover_url: coverUrl || null,
       });
-      setLoading(false);
-    } else {
       toast({
         title: 'Sucesso!',
         description: 'Livro adicionado com sucesso.',
@@ -150,6 +143,13 @@ export default function NewBookPage() {
       });
       router.push('/app/books');
       router.refresh();
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
+      });
+      setLoading(false);
     }
   };
 

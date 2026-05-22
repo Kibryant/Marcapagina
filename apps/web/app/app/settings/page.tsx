@@ -1,5 +1,13 @@
 'use client';
 
+import {
+  getProfile,
+  listBooks,
+  listBookTitles,
+  listFollowsForUser,
+  listSessions,
+  updateProfile,
+} from '@marcapagina/data';
 import { type Book as BookType, cn, type Profile } from '@marcapagina/shared';
 import {
   Book,
@@ -47,25 +55,16 @@ export default function SettingsPage() {
     } = await supabase.auth.getUser();
 
     if (user) {
-      // Fetch profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      const [profileData, booksData] = await Promise.all([
+        getProfile(supabase, user.id),
+        listBookTitles(supabase),
+      ]);
 
       setProfile(profileData);
       if (profileData?.theme) {
         setTheme(profileData.theme);
       }
-
-      // Fetch books for "Favorite Book" select
-      const { data: booksData } = await supabase
-        .from('books')
-        .select('id, title')
-        .order('title');
-
-      setBooks(booksData || []);
+      setBooks(booksData);
     }
     setLoading(false);
   }, [supabase, setTheme]);
@@ -79,30 +78,26 @@ export default function SettingsPage() {
     if (!profile) return;
 
     setSaving(true);
-    const { error } = await supabase
-      .from('profiles')
-      .update({
+    try {
+      await updateProfile(supabase, profile.id, {
         display_name: profile.display_name,
         username: profile.username,
         favorite_book_id: profile.favorite_book_id,
         goal_pages_per_day: profile.goal_pages_per_day || 0,
         is_public: profile.is_public,
         theme: profile.theme,
-      })
-      .eq('id', profile.id);
-
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
       });
-    } else {
       setTheme(profile.theme);
       toast({
         title: 'Sucesso',
         description: 'Perfil atualizado!',
         variant: 'success',
+      });
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
       });
     }
     setSaving(false);
@@ -113,12 +108,9 @@ export default function SettingsPage() {
     setProfile({ ...profile, avatar_url: newUrl });
 
     // Instantly update DB as well
-    const { error } = await supabase
-      .from('profiles')
-      .update({ avatar_url: newUrl })
-      .eq('id', profile.id);
-
-    if (error) {
+    try {
+      await updateProfile(supabase, profile.id, { avatar_url: newUrl });
+    } catch {
       toast({
         title: 'Erro',
         description: 'Falha ao salvar a imagem no perfil.',
@@ -136,20 +128,13 @@ export default function SettingsPage() {
       if (!user) throw new Error('Usuário não autenticado');
 
       // Fetch all user related data
-      const [
-        { data: profileData },
-        { data: booksData },
-        { data: sessionsData },
-        { data: followsData },
-      ] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).single(),
-        supabase.from('books').select('*').eq('user_id', user.id),
-        supabase.from('reading_sessions').select('*').eq('user_id', user.id),
-        supabase
-          .from('follows')
-          .select('*')
-          .or(`follower_id.eq.${user.id},following_id.eq.${user.id}`),
-      ]);
+      const [profileData, booksData, sessionsData, followsData] =
+        await Promise.all([
+          getProfile(supabase, user.id),
+          listBooks(supabase, user.id),
+          listSessions(supabase, user.id),
+          listFollowsForUser(supabase, user.id),
+        ]);
 
       const exportData = {
         exported_at: new Date().toISOString(),

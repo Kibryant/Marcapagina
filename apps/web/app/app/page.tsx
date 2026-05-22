@@ -1,3 +1,4 @@
+import { getProfile, listBooks, listSessions } from '@marcapagina/data';
 import {
   getMonthPace,
   getMonthPages,
@@ -36,34 +37,18 @@ import { getXPProgress, XP_TO_NEXT_LEVEL } from '@/lib/xp';
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  // Fetch user
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const userId = user?.id ?? '';
 
-  // Fetch profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user?.id)
-    .single();
+  const [profile, books, sessionList] = await Promise.all([
+    getProfile(supabase, userId),
+    listBooks(supabase, userId),
+    listSessions(supabase, userId),
+  ]);
 
-  // Fetch books
-  const { data: books } = await supabase
-    .from('books')
-    .select('*')
-    .eq('user_id', user?.id)
-    .order('created_at', { ascending: false });
-
-  // Fetch sessions
-  const { data: sessions } = await supabase
-    .from('reading_sessions')
-    .select('*')
-    .eq('user_id', user?.id)
-    .order('date', { ascending: false });
-
-  const activeBooks = books?.filter((b) => b.status === 'reading') || [];
-  const sessionList = sessions || [];
+  const activeBooks = books.filter((b) => b.status === 'reading');
 
   // Metrics
   const todayPages = getTodayPages(sessionList);

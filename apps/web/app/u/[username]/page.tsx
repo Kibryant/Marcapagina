@@ -1,3 +1,4 @@
+import { getPublicProfile, listSessions } from '@marcapagina/data';
 import { getMonthPages, getStreak } from '@marcapagina/shared/metrics';
 import { Book, Flame, Trophy } from 'lucide-react';
 import Link from 'next/link';
@@ -13,25 +14,13 @@ export default async function PublicProfilePage({
   const { username } = await params;
   const supabase = await createClient();
 
-  // Fetch profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*, favorite_book:books(title, author)')
-    .eq('username', username)
-    .single();
+  const profile = await getPublicProfile(supabase, username);
 
   if (!profile || !profile.is_public) {
     notFound();
   }
 
-  // Fetch sessions for streak and pages
-  const { data: sessions } = await supabase
-    .from('reading_sessions')
-    .select('*')
-    .eq('user_id', profile.id)
-    .order('date', { ascending: false });
-
-  const sessionList = sessions || [];
+  const sessionList = await listSessions(supabase, profile.id);
   const monthPages = getMonthPages(sessionList);
   const streak = getStreak(sessionList);
 

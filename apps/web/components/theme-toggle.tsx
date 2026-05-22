@@ -1,5 +1,6 @@
 'use client';
 
+import { updateProfile } from '@marcapagina/data';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { startTransition, useEffect, useState } from 'react';
@@ -26,10 +27,11 @@ export function ThemeToggle() {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
-      await supabase
-        .from('profiles')
-        .update({ theme: newTheme })
-        .eq('id', user.id);
+      try {
+        await updateProfile(supabase, user.id, { theme: newTheme });
+      } catch {
+        // persistência do tema é best-effort
+      }
     }
   };
 

@@ -1,3 +1,4 @@
+import { listAchievements, listUserAchievements } from '@marcapagina/data';
 import type { Achievement } from '@marcapagina/shared';
 import { Trophy } from 'lucide-react';
 import { AchievementCard } from '@/components/achievement-card';
@@ -12,15 +13,10 @@ export default async function AchievementsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: achievements } = await supabase
-    .from('achievements')
-    .select('*')
-    .order('criteria_value', { ascending: true });
-
-  const { data: userAchievements } = await supabase
-    .from('user_achievements')
-    .select('achievement_id, unlocked_at')
-    .eq('user_id', user?.id);
+  const [achievements, userAchievements] = await Promise.all([
+    listAchievements(supabase),
+    listUserAchievements(supabase, user?.id ?? ''),
+  ]);
 
   const unlockedMap = new Map(
     (userAchievements ?? []).map((ua) => [ua.achievement_id, ua.unlocked_at])

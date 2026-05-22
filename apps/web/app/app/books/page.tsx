@@ -1,3 +1,4 @@
+import { listBooks } from '@marcapagina/data';
 import {
   BookMarked,
   BookOpen,
@@ -20,13 +21,9 @@ export default async function BooksPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: books } = await supabase
-    .from('books')
-    .select('*')
-    .eq('user_id', user?.id)
-    .order('created_at', { ascending: false });
+  const books = await listBooks(supabase, user?.id ?? '');
 
-  const hasAnyBook = books && books.length > 0;
+  const hasAnyBook = books.length > 0;
 
   // Summary counts
   const counts = {

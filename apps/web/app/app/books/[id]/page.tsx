@@ -1,6 +1,21 @@
 'use client';
 
 import {
+  createHighlight,
+  createSession,
+  deleteBook,
+  deleteHighlight,
+  deleteHighlightsByBook,
+  deleteSession,
+  deleteSessionsByBook,
+  getBook,
+  listHighlightsByBook,
+  listSessions,
+  listSessionsByBook,
+  updateBook,
+  updateSession,
+} from '@marcapagina/data';
+import {
   type Book as BookType,
   cn,
   getStreak,
@@ -53,7 +68,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 
 export default function BookDetailsPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [book, setBook] = useState<BookType | null>(null);
   const [sessions, setSessions] = useState<ReadingSession[]>([]);
@@ -92,38 +107,22 @@ export default function BookDetailsPage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { data: bookData } = await supabase
-      .from('books')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const bookData = await getBook(supabase, id);
 
     if (bookData) {
       setBook(bookData);
 
-      const { data: sessionsData } = await supabase
-        .from('reading_sessions')
-        .select('*')
-        .eq('book_id', id)
-        .order('date', { ascending: false });
+      const [sessionsData, allSessionsData, highlightsData] = await Promise.all(
+        [
+          listSessionsByBook(supabase, id),
+          listSessions(supabase, user?.id ?? ''),
+          listHighlightsByBook(supabase, id),
+        ]
+      );
 
-      setSessions(sessionsData || []);
-
-      const { data: allSessionsData } = await supabase
-        .from('reading_sessions')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('date', { ascending: false });
-
-      setAllSessions(allSessionsData || []);
-
-      const { data: highlightsData } = await supabase
-        .from('highlights')
-        .select('*')
-        .eq('book_id', id)
-        .order('created_at', { ascending: false });
-
-      setHighlights(highlightsData || []);
+      setSessions(sessionsData);
+      setAllSessions(allSessionsData);
+      setHighlights(highlightsData);
 
       setSummary(bookData.summary || '');
     }
@@ -144,20 +143,13 @@ export default function BookDetailsPage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from('highlights').insert({
-      user_id: user?.id,
-      book_id: id,
-      content: newHighlight,
-      page: highlightPage ? parseInt(highlightPage, 10) : null,
-    });
-
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
+    try {
+      await createHighlight(supabase, {
+        user_id: user?.id ?? '',
+        book_id: id,
+        content: newHighlight,
+        page: highlightPage ? parseInt(highlightPage, 10) : null,
       });
-    } else {
       setNewHighlight('');
       setHighlightPage('');
       toast({
@@ -166,6 +158,12 @@ export default function BookDetailsPage() {
         variant: 'success',
       });
       fetchData();
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
+      });
     }
     setSubmittingHighlight(false);
   };
@@ -174,23 +172,20 @@ export default function BookDetailsPage() {
     if (!book || savingRating) return;
     setSavingRating(true);
     const newRating = book.rating === rating ? null : rating;
-    const { error } = await supabase
-      .from('books')
-      .update({ rating: newRating })
-      .eq('id', id);
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } else {
+    try {
+      await updateBook(supabase, id, { rating: newRating });
       setBook({ ...book, rating: newRating });
       toast({
         title: newRating
           ? `${newRating} estrela${newRating > 1 ? 's' : ''}! ⭐`
           : 'Avaliação removida',
         variant: 'success',
+      });
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
       });
     }
     setSavingRating(false);
@@ -199,17 +194,8 @@ export default function BookDetailsPage() {
   const handleSaveSummary = async () => {
     if (!book || savingSummary) return;
     setSavingSummary(true);
-    const { error } = await supabase
-      .from('books')
-      .update({ summary })
-      .eq('id', id);
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } else {
+    try {
+      await updateBook(supabase, id, { summary });
       setBook({ ...book, summary });
       setIsEditingSummary(false);
       toast({
@@ -217,29 +203,31 @@ export default function BookDetailsPage() {
         description: 'Reflexão salva!',
         variant: 'success',
       });
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
+      });
     }
     setSavingSummary(false);
   };
 
   const handleStartReading = async () => {
-    const { error } = await supabase
-      .from('books')
-      .update({ status: 'reading' })
-      .eq('id', id);
-
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } else {
+    try {
+      await updateBook(supabase, id, { status: 'reading' });
       toast({
         title: 'Bora!',
         description: "Livro movido para 'Lendo'!",
         variant: 'success',
       });
       fetchData();
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -251,70 +239,62 @@ export default function BookDetailsPage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (remainingPages > 0) {
-      await supabase.from('reading_sessions').insert({
-        user_id: user?.id,
-        book_id: id,
-        pages_read: remainingPages,
-        date: new Date().toISOString().split('T')[0],
-      });
-    }
+    try {
+      if (remainingPages > 0) {
+        await createSession(supabase, {
+          user_id: user?.id ?? '',
+          book_id: id,
+          pages_read: remainingPages,
+          date: new Date().toISOString().slice(0, 10),
+        });
+      }
 
-    const { error } = await supabase
-      .from('books')
-      .update({ current_page: book.total_pages, status: 'finished' })
-      .eq('id', id);
-
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
+      await updateBook(supabase, id, {
+        current_page: book.total_pages,
+        status: 'finished',
       });
-    } else {
       toast({
         title: 'Parabéns!',
         description: 'Livro finalizado com sucesso!',
         variant: 'success',
       });
       fetchData();
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
+      });
     }
   };
 
   const handleCategoryChange = async (newCategory: string) => {
     if (!book) return;
     const value = newCategory === 'none' ? null : newCategory;
-    const { error } = await supabase
-      .from('books')
-      .update({ category: value })
-      .eq('id', id);
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } else {
+    try {
+      await updateBook(supabase, id, { category: value });
       setBook({ ...book, category: value });
       toast({ title: 'Categoria atualizada!', variant: 'success' });
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
+      });
     }
   };
 
   const handleDeleteHighlight = async (highlightId: string) => {
-    const { error } = await supabase
-      .from('highlights')
-      .delete()
-      .eq('id', highlightId);
-
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } else {
+    try {
+      await deleteHighlight(supabase, highlightId);
       setHighlights(highlights.filter((h) => h.id !== highlightId));
       toast({ title: 'Removido', description: 'Trecho excluído.' });
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -323,19 +303,18 @@ export default function BookDetailsPage() {
     if (!book) return;
     setDeletingBook(true);
 
-    await supabase.from('highlights').delete().eq('book_id', id);
-    await supabase.from('reading_sessions').delete().eq('book_id', id);
-    const { error } = await supabase.from('books').delete().eq('id', id);
-
-    if (error) {
+    try {
+      await deleteHighlightsByBook(supabase, id);
+      await deleteSessionsByBook(supabase, id);
+      await deleteBook(supabase, id);
+      router.push('/app/books');
+    } catch (err) {
       toast({
         title: 'Erro',
-        description: error.message,
+        description: err instanceof Error ? err.message : 'Erro inesperado',
         variant: 'destructive',
       });
       setDeletingBook(false);
-    } else {
-      router.push('/app/books');
     }
   };
 
@@ -352,33 +331,28 @@ export default function BookDetailsPage() {
 
     const pagesDelta = editingSession.pages - oldSession.pages_read;
 
-    const { error: sessionError } = await supabase
-      .from('reading_sessions')
-      .update({ pages_read: editingSession.pages, date: editingSession.date })
-      .eq('id', editingSession.id);
+    try {
+      await updateSession(supabase, editingSession.id, {
+        pages_read: editingSession.pages,
+        date: editingSession.date,
+      });
 
-    if (sessionError) {
+      const newCurrentPage = Math.max(
+        0,
+        Math.min(book.total_pages, book.current_page + pagesDelta)
+      );
+      await updateBook(supabase, id, { current_page: newCurrentPage });
+
+      setEditingSession(null);
+      toast({ title: 'Sessão atualizada!', variant: 'success' });
+      fetchData();
+    } catch (err) {
       toast({
         title: 'Erro',
-        description: sessionError.message,
+        description: err instanceof Error ? err.message : 'Erro inesperado',
         variant: 'destructive',
       });
-      setSavingSession(false);
-      return;
     }
-
-    const newCurrentPage = Math.max(
-      0,
-      Math.min(book.total_pages, book.current_page + pagesDelta)
-    );
-    await supabase
-      .from('books')
-      .update({ current_page: newCurrentPage })
-      .eq('id', id);
-
-    setEditingSession(null);
-    toast({ title: 'Sessão atualizada!', variant: 'success' });
-    fetchData();
     setSavingSession(false);
   };
 
@@ -386,29 +360,22 @@ export default function BookDetailsPage() {
   const handleDeleteSession = async (sessionId: string, pagesRead: number) => {
     if (!book) return;
 
-    const { error } = await supabase
-      .from('reading_sessions')
-      .delete()
-      .eq('id', sessionId);
+    try {
+      await deleteSession(supabase, sessionId);
 
-    if (error) {
+      const newCurrentPage = Math.max(0, book.current_page - pagesRead);
+      await updateBook(supabase, id, { current_page: newCurrentPage });
+
+      setDeletingSessionId(null);
+      toast({ title: 'Sessão removida.' });
+      fetchData();
+    } catch (err) {
       toast({
         title: 'Erro',
-        description: error.message,
+        description: err instanceof Error ? err.message : 'Erro inesperado',
         variant: 'destructive',
       });
-      return;
     }
-
-    const newCurrentPage = Math.max(0, book.current_page - pagesRead);
-    await supabase
-      .from('books')
-      .update({ current_page: newCurrentPage })
-      .eq('id', id);
-
-    setDeletingSessionId(null);
-    toast({ title: 'Sessão removida.' });
-    fetchData();
   };
 
   if (loading) return <BookDetailsLoadingSkeleton />;

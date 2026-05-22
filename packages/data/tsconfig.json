@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@marcapagina/shared": ["../shared/index.ts"],
+      "@marcapagina/data": ["./index.ts"]
+    }
+  },
+  "include": ["**/*.ts"]
+}

@@ -174,7 +174,10 @@ export function calculateGoalsSuggestions(
 
 // === STORY / NARRATIVE LOGIC ===
 
-export function generateStoryData(sessions: ReadingSession[], books: Book[]) {
+export function generateStoryData(
+  sessions: ReadingSession[],
+  books: Pick<Book, 'status'>[]
+) {
   const today = new Date();
   const currentMonthStart = startOfMonth(today);
   const lastMonthStart = startOfMonth(subMonths(today, 1));

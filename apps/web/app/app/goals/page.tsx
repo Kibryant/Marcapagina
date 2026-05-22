@@ -1,7 +1,5 @@
-import {
-  calculateGoalsSuggestions,
-  type ReadingSession,
-} from '@marcapagina/shared';
+import { getActiveGoal, listSessions } from '@marcapagina/data';
+import { calculateGoalsSuggestions } from '@marcapagina/shared';
 import { getMonthPages, getTodayPages } from '@marcapagina/shared/metrics';
 import { AppShell } from '@/components/app-shell';
 import { createClient } from '@/lib/supabase/server';
@@ -13,22 +11,11 @@ export default async function GoalsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch current reading history
-  const { data: sessions } = await supabase
-    .from('reading_sessions')
-    .select('id, user_id, book_id, date, pages_read, created_at')
-    .eq('user_id', user?.id)
-    .order('date', { ascending: false });
-
-  // Fetch active goal
-  const { data: activeGoal } = await supabase
-    .from('goals')
-    .select('*')
-    .eq('user_id', user?.id)
-    .eq('active', true)
-    .single();
-
-  const sessionList = (sessions || []) as ReadingSession[];
+  const userId = user?.id ?? '';
+  const [sessionList, activeGoal] = await Promise.all([
+    listSessions(supabase, userId),
+    getActiveGoal(supabase, userId),
+  ]);
 
   const todayPages = getTodayPages(sessionList);
   const currentMonthPages = getMonthPages(sessionList);

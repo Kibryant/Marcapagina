@@ -1,5 +1,6 @@
 'use client';
 
+import { createGoal, deactivateGoals } from '@marcapagina/data';
 import type { calculateGoalsSuggestions, Goal } from '@marcapagina/shared';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -57,14 +58,8 @@ export function GoalsClient({
     }
 
     try {
-      // Deactivate current goals
-      await supabase
-        .from('goals')
-        .update({ active: false })
-        .eq('user_id', user.id);
-
-      // Insert new goal
-      const { error } = await supabase.from('goals').insert({
+      await deactivateGoals(supabase, user.id);
+      await createGoal(supabase, {
         user_id: user.id,
         daily_pages: suggestion.suggestedDaily,
         monthly_pages: suggestion.suggestedMonthly,
@@ -73,8 +68,6 @@ export function GoalsClient({
         suggested_reason: suggestion.reason,
         active: true,
       });
-
-      if (error) throw error;
 
       toast({
         title: 'Sucesso!',
@@ -120,19 +113,13 @@ export function GoalsClient({
     }
 
     try {
-      await supabase
-        .from('goals')
-        .update({ active: false })
-        .eq('user_id', user.id);
-
-      const { error } = await supabase.from('goals').insert({
+      await deactivateGoals(supabase, user.id);
+      await createGoal(supabase, {
         user_id: user.id,
         daily_pages: d,
         monthly_pages: m,
         active: true,
       });
-
-      if (error) throw error;
 
       toast({
         title: 'Metas salvas',
