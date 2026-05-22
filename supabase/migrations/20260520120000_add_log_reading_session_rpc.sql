@@ -135,16 +135,17 @@ begin
         where ua.user_id = v_user_id and ua.achievement_id = a.id
      )
   loop
-    if case v_ach.criteria_type
-         when 'first_log'      then v_session_count >= 1
-         when 'streak'         then v_streak >= coalesce(v_ach.criteria_value, 3)
-         when 'pages_day'      then v_pages_today >= coalesce(v_ach.criteria_value, 100)
-         when 'night_owl'      then v_hour between 0 and 4
-         when 'books_finished' then v_books_finished >= coalesce(v_ach.criteria_value, 1)
-         when 'books_added'    then v_total_books >= coalesce(v_ach.criteria_value, 5)
-         else false
-       end
-    then
+    if (
+      case v_ach.criteria_type
+        when 'first_log'      then v_session_count >= 1
+        when 'streak'         then v_streak >= coalesce(v_ach.criteria_value, 3)
+        when 'pages_day'      then v_pages_today >= coalesce(v_ach.criteria_value, 100)
+        when 'night_owl'      then v_hour between 0 and 4
+        when 'books_finished' then v_books_finished >= coalesce(v_ach.criteria_value, 1)
+        when 'books_added'    then v_total_books >= coalesce(v_ach.criteria_value, 5)
+        else false
+      end
+    ) then
       insert into public.user_achievements (user_id, achievement_id)
       values (v_user_id, v_ach.id)
       on conflict do nothing;
