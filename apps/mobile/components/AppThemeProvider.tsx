@@ -1,3 +1,4 @@
+import { updateProfile } from '@marcapagina/data';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -53,10 +54,11 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
-      await supabase
-        .from('profiles')
-        .update({ theme: newTheme })
-        .eq('id', user.id);
+      try {
+        await updateProfile(supabase, user.id, { theme: newTheme });
+      } catch {
+        // sincronização do tema é best-effort
+      }
     }
   };
 

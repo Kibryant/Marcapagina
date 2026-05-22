@@ -1,3 +1,4 @@
+import { getProfile, updateProfile } from '@marcapagina/data';
 import type { Profile } from '@marcapagina/shared';
 import { useRouter } from 'expo-router';
 import { Bell, LogOut, User } from 'lucide-react-native';
@@ -32,13 +33,7 @@ export default function ConfigScreen() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error) throw error;
+      const data = await getProfile(supabase, user.id);
 
       if (data) {
         setProfile(data);
@@ -72,15 +67,10 @@ export default function ConfigScreen() {
         );
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          display_name: displayName,
-          goal_pages_per_day: parsedGoal,
-        })
-        .eq('id', profile.id);
-
-      if (error) throw error;
+      await updateProfile(supabase, profile.id, {
+        display_name: displayName,
+        goal_pages_per_day: parsedGoal,
+      });
       Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
     } catch (error: any) {
       Alert.alert('Erro', error.message);

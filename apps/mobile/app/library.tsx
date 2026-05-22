@@ -1,3 +1,4 @@
+import { listBooks } from '@marcapagina/data';
 import type { Book } from '@marcapagina/shared';
 import { useRouter } from 'expo-router';
 import {
@@ -75,14 +76,8 @@ export default function LibraryScreen() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      if (data) setBooks(data);
+      const data = await listBooks(supabase, user.id);
+      setBooks(data);
     } catch (error) {
       console.error('Error fetching library data:', error);
     } finally {

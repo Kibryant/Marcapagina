@@ -55,6 +55,20 @@ export async function listUnfinishedBooks(
   return (data ?? []) as Book[];
 }
 
+/** Livros em leitura do usuário. */
+export async function listReadingBooks(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<Book[]> {
+  const { data, error } = await supabase
+    .from('books')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('status', 'reading');
+  if (error) throw error;
+  return (data ?? []) as Book[];
+}
+
 /** id + título de cada livro (para selects). */
 export async function listBookTitles(
   supabase: SupabaseClient

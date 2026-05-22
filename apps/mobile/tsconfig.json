@@ -3,6 +3,8 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./*"],
+      "@marcapagina/data": ["../../packages/data"],
+      "@marcapagina/data/*": ["../../packages/data/*"],
       "@marcapagina/shared": ["../../packages/shared"],
       "@marcapagina/shared/*": ["../../packages/shared/*"]
     }

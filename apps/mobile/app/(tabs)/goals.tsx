@@ -1,4 +1,10 @@
 import {
+  createGoal,
+  deactivateGoals,
+  getActiveGoal,
+  listSessions,
+} from '@marcapagina/data';
+import {
   calculateGoalsSuggestions,
   type Goal,
   getMonthPages,
@@ -46,26 +52,17 @@ export default function GoalsScreen() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [goalRes, sessionsRes] = await Promise.all([
-        supabase
-          .from('goals')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('active', true)
-          .maybeSingle(),
-        supabase
-          .from('reading_sessions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('date', { ascending: false }),
+      const [goalData, sessionsData] = await Promise.all([
+        getActiveGoal(supabase, user.id),
+        listSessions(supabase, user.id),
       ]);
 
-      if (goalRes.data) {
-        setGoal(goalRes.data);
-        setDailyGoalStr(String(goalRes.data.daily_pages || ''));
-        setMonthlyGoalStr(String(goalRes.data.monthly_pages || ''));
+      if (goalData) {
+        setGoal(goalData);
+        setDailyGoalStr(String(goalData.daily_pages || ''));
+        setMonthlyGoalStr(String(goalData.monthly_pages || ''));
       }
-      if (sessionsRes.data) setSessions(sessionsRes.data);
+      setSessions(sessionsData);
     } catch (error) {
       console.error('Error fetching goals data:', error);
     } finally {
@@ -87,14 +84,8 @@ export default function GoalsScreen() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Deactivate current goals
-      await supabase
-        .from('goals')
-        .update({ active: false })
-        .eq('user_id', user.id);
-
-      // Insert new goal
-      const { error } = await supabase.from('goals').insert({
+      await deactivateGoals(supabase, user.id);
+      await createGoal(supabase, {
         user_id: user.id,
         daily_pages: suggestion.suggestedDaily,
         monthly_pages: suggestion.suggestedMonthly,
@@ -103,8 +94,6 @@ export default function GoalsScreen() {
         suggested_reason: suggestion.reason,
         active: true,
       });
-
-      if (error) throw error;
 
       await fetchData();
       Alert.alert(
@@ -136,19 +125,13 @@ export default function GoalsScreen() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      await supabase
-        .from('goals')
-        .update({ active: false })
-        .eq('user_id', user.id);
-
-      const { error } = await supabase.from('goals').insert({
+      await deactivateGoals(supabase, user.id);
+      await createGoal(supabase, {
         user_id: user.id,
         daily_pages: d,
         monthly_pages: m,
         active: true,
       });
-
-      if (error) throw error;
 
       await fetchData();
       Alert.alert(

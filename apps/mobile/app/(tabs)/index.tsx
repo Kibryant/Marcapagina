@@ -1,5 +1,11 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
+  createSession,
+  getProfile,
+  listReadingBooks,
+  listSessions,
+} from '@marcapagina/data';
+import {
   type Book,
   generateStoryData,
   getStreak,
@@ -51,23 +57,15 @@ export default function DashboardScreen() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [profileRes, sessionsRes, booksRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).single(),
-        supabase
-          .from('reading_sessions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('books')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('status', 'reading'),
+      const [profileData, sessionsData, booksData] = await Promise.all([
+        getProfile(supabase, user.id),
+        listSessions(supabase, user.id),
+        listReadingBooks(supabase, user.id),
       ]);
 
-      if (profileRes.data) setProfile(profileRes.data);
-      if (sessionsRes.data) setSessions(sessionsRes.data);
-      if (booksRes.data) setBooks(booksRes.data);
+      setProfile(profileData);
+      setSessions(sessionsData);
+      setBooks(booksData);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -93,15 +91,13 @@ export default function DashboardScreen() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase.from('reading_sessions').insert({
+      await createSession(supabase, {
         user_id: user.id,
         book_id: bookId,
         pages_read: pages,
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toISOString().slice(0, 10),
         duration_minutes: 0,
       });
-
-      if (error) throw error;
 
       await fetchData();
       bottomSheetModalRef.current?.dismiss();

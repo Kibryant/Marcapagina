@@ -1,3 +1,4 @@
+import { listBooks, listSessions } from '@marcapagina/data';
 import {
   type Book,
   generateStoryData,
@@ -45,17 +46,13 @@ export default function HistoryScreen() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [sessionsRes, booksRes] = await Promise.all([
-        supabase
-          .from('reading_sessions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('date', { ascending: false }),
-        supabase.from('books').select('*').eq('user_id', user.id),
+      const [sessionsData, booksData] = await Promise.all([
+        listSessions(supabase, user.id),
+        listBooks(supabase, user.id),
       ]);
 
-      if (sessionsRes.data) setSessions(sessionsRes.data);
-      if (booksRes.data) setBooks(booksRes.data);
+      setSessions(sessionsData);
+      setBooks(booksData);
     } catch (error) {
       console.error('Error fetching history data:', error);
     } finally {

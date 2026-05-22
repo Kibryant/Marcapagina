@@ -1,4 +1,9 @@
 import {
+  createSession,
+  listReadingBooks,
+  listSessions,
+} from '@marcapagina/data';
+import {
   type Book,
   getTodayPages,
   type ReadingSession,
@@ -40,21 +45,13 @@ export default function TimerScreen() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [booksRes, sessionsRes] = await Promise.all([
-        supabase
-          .from('books')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('status', 'reading'),
-        supabase
-          .from('reading_sessions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false }),
+      const [booksData, sessionsData] = await Promise.all([
+        listReadingBooks(supabase, user.id),
+        listSessions(supabase, user.id),
       ]);
 
-      if (booksRes.data) setBooks(booksRes.data);
-      if (sessionsRes.data) setSessions(sessionsRes.data);
+      setBooks(booksData);
+      setSessions(sessionsData);
     } catch (error) {
       console.error('Error fetching timer data:', error);
     } finally {
@@ -85,15 +82,13 @@ export default function TimerScreen() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase.from('reading_sessions').insert({
+      await createSession(supabase, {
         user_id: user.id,
         book_id: bookToLog.id,
         pages_read: 0,
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toISOString().slice(0, 10),
         duration_minutes: minutes,
       });
-
-      if (error) throw error;
 
       await fetchData();
       Alert.alert(
