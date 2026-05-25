@@ -99,3 +99,27 @@ insert into public.books (
   40,
   'reading'
 );
+
+-- ── Conquistas de exemplo ───────────────────────────────────────────────────
+-- Valores propositalmente altos para que os specs E2E não as desbloqueiem
+-- acidentalmente ao registrar uma leitura.
+insert into public.achievements (id, name, description, icon, criteria_type, criteria_value, xp_reward)
+values
+  (
+    '33333333-3333-3333-3333-333333333333',
+    'Maratonista E2E',
+    'Leia 999 páginas em um único dia.',
+    'Flame',
+    'pages_day',
+    999,
+    100
+  ),
+  (
+    '44444444-4444-4444-4444-444444444444',
+    'Colecionador E2E',
+    'Adicione 999 livros à sua biblioteca.',
+    'Library',
+    'books_added',
+    999,
+    100
+  );
