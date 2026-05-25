@@ -5,9 +5,10 @@ import {
   type HighlightWithBook,
   updateHighlight,
 } from '@marcapagina/data';
-import { Check, Pencil, Quote, Search, Trash2, X } from 'lucide-react';
+import { Check, Pencil, Quote, Search, Share2, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { HighlightSharingCard } from '@/components/highlight-sharing-card';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -174,6 +175,21 @@ export function HighlightsList({ highlights: initial }: HighlightsListProps) {
                   </span>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <HighlightSharingCard
+                    content={highlight.content}
+                    bookTitle={highlight.book?.title ?? 'Livro removido'}
+                    bookAuthor={highlight.book?.author}
+                    page={highlight.page}
+                    trigger={
+                      <button
+                        type="button"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                        title="Compartilhar"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </button>
+                    }
+                  />
                   <button
                     type="button"
                     onClick={() =>

@@ -31,6 +31,7 @@ import {
   ChevronLeft,
   Pencil,
   Quote,
+  Share2,
   Tag,
   Trash2,
   X,
@@ -40,6 +41,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
+import { HighlightSharingCard } from '@/components/highlight-sharing-card';
 import { SharingCard } from '@/components/sharing-card';
 import { StarRating } from '@/components/star-rating';
 import { Button } from '@/components/ui/button';
@@ -890,7 +892,22 @@ export default function BookDetailsPage() {
                       <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-full">
                         {highlight.page ? `Página ${highlight.page}` : 'Nota'}
                       </span>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                        <HighlightSharingCard
+                          content={highlight.content}
+                          bookTitle={book.title}
+                          bookAuthor={book.author}
+                          page={highlight.page}
+                          trigger={
+                            <button
+                              type="button"
+                              className="text-muted-foreground hover:text-primary"
+                              title="Compartilhar"
+                            >
+                              <Share2 className="h-4 w-4" />
+                            </button>
+                          }
+                        />
                         <button
                           type="button"
                           onClick={() =>
