@@ -31,18 +31,30 @@ export function AppShell({ children, hideNav = false }: AppShellProps) {
   const supabase = createClient();
   const { setTheme } = useTheme();
 
-  // Sync theme from DB on mount
+  // Sincroniza o tema do DB uma única vez por aba — depois disso o
+  // next-themes mantém em localStorage. Rodar a cada navegação fazia o
+  // tema piscar entre o valor restaurado pelo next-themes e o do DB.
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (sessionStorage.getItem('marcapagina:theme-synced') === '1') return;
+
     const syncTheme = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
       const profile = await getProfile(supabase, user.id);
+      sessionStorage.setItem('marcapagina:theme-synced', '1');
       if (
-        profile?.theme &&
-        (profile.theme === 'light' || profile.theme === 'dark')
+        !profile?.theme ||
+        (profile.theme !== 'light' && profile.theme !== 'dark')
       ) {
+        return;
+      }
+      const current = document.documentElement.classList.contains('dark')
+        ? 'dark'
+        : 'light';
+      if (current !== profile.theme) {
         setTheme(profile.theme);
       }
     };

@@ -18,21 +18,24 @@ export function ThemeToggle() {
     });
   }, []);
 
-  const handleToggle = async () => {
+  const handleToggle = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
+    // Troca visual imediata — next-themes atualiza a classe do <html> e o
+    // localStorage de forma síncrona.
     setTheme(newTheme);
 
-    // Persist to database in background (fire-and-forget)
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
+    // Persistência no Supabase é best-effort e não bloqueia o clique.
+    void (async () => {
       try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
         await updateProfile(supabase, user.id, { theme: newTheme });
       } catch {
-        // persistência do tema é best-effort
+        // ignora — o tema já está aplicado localmente
       }
-    }
+    })();
   };
 
   if (!mounted) return <div className="w-9 h-9" />;
