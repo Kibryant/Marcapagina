@@ -13,6 +13,7 @@ import {
   listSessions,
   listSessionsByBook,
   updateBook,
+  updateHighlight,
   updateSession,
 } from '@marcapagina/data';
 import {
@@ -76,6 +77,12 @@ export default function BookDetailsPage() {
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [newHighlight, setNewHighlight] = useState('');
   const [highlightPage, setHighlightPage] = useState('');
+  const [editingHighlight, setEditingHighlight] = useState<{
+    id: string;
+    content: string;
+    page: string;
+  } | null>(null);
+  const [savingHighlight, setSavingHighlight] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submittingHighlight, setSubmittingHighlight] = useState(false);
   const [savingRating, setSavingRating] = useState(false);
@@ -282,6 +289,33 @@ export default function BookDetailsPage() {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleSaveHighlightEdit = async () => {
+    if (!editingHighlight) return;
+    const content = editingHighlight.content.trim();
+    if (!content) return;
+    setSavingHighlight(true);
+    const page = editingHighlight.page
+      ? parseInt(editingHighlight.page, 10)
+      : null;
+    try {
+      await updateHighlight(supabase, editingHighlight.id, { content, page });
+      setHighlights((prev) =>
+        prev.map((h) =>
+          h.id === editingHighlight.id ? { ...h, content, page } : h
+        )
+      );
+      toast({ title: 'Trecho atualizado!', variant: 'success' });
+      setEditingHighlight(null);
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
+      });
+    }
+    setSavingHighlight(false);
   };
 
   const handleDeleteHighlight = async (highlightId: string) => {
@@ -856,14 +890,32 @@ export default function BookDetailsPage() {
                       <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-full">
                         {highlight.page ? `Página ${highlight.page}` : 'Nota'}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteHighlight(highlight.id)}
-                        className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all duration-200"
-                        title="Excluir"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditingHighlight({
+                              id: highlight.id,
+                              content: highlight.content,
+                              page: highlight.page
+                                ? String(highlight.page)
+                                : '',
+                            })
+                          }
+                          className="text-muted-foreground hover:text-primary"
+                          title="Editar"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteHighlight(highlight.id)}
+                          className="text-muted-foreground hover:text-destructive"
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -872,6 +924,70 @@ export default function BookDetailsPage() {
           </aside>
         </div>
       </div>
+
+      {/* Edit highlight dialog */}
+      <Dialog
+        open={!!editingHighlight}
+        onOpenChange={(open) => {
+          if (!open) setEditingHighlight(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar trecho</DialogTitle>
+            <DialogDescription>
+              Ajuste o conteúdo ou a página deste trecho.
+            </DialogDescription>
+          </DialogHeader>
+          {editingHighlight && (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Conteúdo
+                </Label>
+                <textarea
+                  className="w-full min-h-[120px] rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow"
+                  value={editingHighlight.content}
+                  onChange={(e) =>
+                    setEditingHighlight({
+                      ...editingHighlight,
+                      content: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Página
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={editingHighlight.page}
+                  onChange={(e) =>
+                    setEditingHighlight({
+                      ...editingHighlight,
+                      page: e.target.value,
+                    })
+                  }
+                  className="rounded-lg"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DialogClose>
+            <Button
+              onClick={handleSaveHighlightEdit}
+              disabled={savingHighlight || !editingHighlight?.content.trim()}
+            >
+              {savingHighlight ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete session confirmation dialog */}
       <Dialog
