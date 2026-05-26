@@ -12,3 +12,4 @@ export * from './src/goals';
 export * from './src/highlights';
 export * from './src/profiles';
 export * from './src/sessions';
+export * from './src/streak-freezes';

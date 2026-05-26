@@ -4,6 +4,7 @@ import { cn } from '@marcapagina/shared';
 import {
   BookMarked,
   BookOpen,
+  BookX,
   CheckCircle2,
   Heart,
   type LucideIcon,
@@ -14,7 +15,7 @@ import { useState } from 'react';
 import { BookCard } from '@/components/book-card';
 import { Input } from '@/components/ui/input';
 
-type BookStatus = 'reading' | 'next' | 'wishlist' | 'finished';
+type BookStatus = 'reading' | 'next' | 'wishlist' | 'finished' | 'dnf';
 
 const CATEGORIES: { value: string; label: string }[] = [
   { value: 'ficcao', label: '📖 Ficção' },
@@ -63,6 +64,13 @@ const SECTIONS: {
     icon: CheckCircle2,
     accentClass: 'text-success border-success/30 bg-success/5',
     gridOpacity: 'opacity-70',
+  },
+  {
+    status: 'dnf',
+    label: 'Abandonados',
+    icon: BookX,
+    accentClass: 'text-muted-foreground border-border bg-muted/30',
+    gridOpacity: 'opacity-60',
   },
 ];
 

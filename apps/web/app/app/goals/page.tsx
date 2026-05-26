@@ -1,4 +1,4 @@
-import { getActiveGoal, listSessions } from '@marcapagina/data';
+import { getActiveGoal, getProfile, listSessions } from '@marcapagina/data';
 import { calculateGoalsSuggestions } from '@marcapagina/shared';
 import { getMonthPages, getTodayPages } from '@marcapagina/shared/metrics';
 import { AppShell } from '@/components/app-shell';
@@ -12,13 +12,15 @@ export default async function GoalsPage() {
   } = await supabase.auth.getUser();
 
   const userId = user?.id ?? '';
-  const [sessionList, activeGoal] = await Promise.all([
+  const [profile, sessionList, activeGoal] = await Promise.all([
+    getProfile(supabase, userId),
     listSessions(supabase, userId),
     getActiveGoal(supabase, userId),
   ]);
 
-  const todayPages = getTodayPages(sessionList);
-  const currentMonthPages = getMonthPages(sessionList);
+  const tzOpts = { timezone: profile?.timezone };
+  const todayPages = getTodayPages(sessionList, tzOpts);
+  const currentMonthPages = getMonthPages(sessionList, tzOpts);
 
   // Generate algorithmic suggestion based on the last 14 days
   const suggestion = calculateGoalsSuggestions(sessionList, currentMonthPages);

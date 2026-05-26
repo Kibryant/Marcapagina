@@ -23,7 +23,7 @@ export interface Book {
   author: string | null;
   total_pages: number;
   current_page: number;
-  status: 'reading' | 'wishlist' | 'next' | 'finished';
+  status: 'reading' | 'wishlist' | 'next' | 'finished' | 'dnf';
   category: string | null;
   rating: number | null;
   summary: string | null;
@@ -293,3 +293,5 @@ export function generateStoryData(
 }
 
 export * from './metrics';
+export * from './book-eta';
+export * from './year-story';

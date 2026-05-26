@@ -1,4 +1,10 @@
-import { getProfile, listBooks, listSessions } from '@marcapagina/data';
+import {
+  getProfile,
+  listAvailableFreezes,
+  listBooks,
+  listConsumedFreezeDates,
+  listSessions,
+} from '@marcapagina/data';
 import {
   getMonthPace,
   getMonthPages,
@@ -24,6 +30,7 @@ import { DailyGoal } from '@/components/daily-goal';
 import { EmptyState } from '@/components/empty-state';
 import { MonthlyChart } from '@/components/monthly-chart';
 import { StatTile } from '@/components/stat-tile';
+import { StreakFreezePanel } from '@/components/streak-freeze-panel';
 import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { getAllInsights } from '@/lib/insights';
@@ -42,19 +49,25 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   const userId = user?.id ?? '';
 
-  const [profile, books, sessionList] = await Promise.all([
-    getProfile(supabase, userId),
-    listBooks(supabase, userId),
-    listSessions(supabase, userId),
-  ]);
+  const [profile, books, sessionList, freezeDates, availableFreezes] =
+    await Promise.all([
+      getProfile(supabase, userId),
+      listBooks(supabase, userId),
+      listSessions(supabase, userId),
+      listConsumedFreezeDates(supabase, userId),
+      listAvailableFreezes(supabase, userId),
+    ]);
 
   const activeBooks = books.filter((b) => b.status === 'reading');
 
-  // Metrics
-  const todayPages = getTodayPages(sessionList);
-  const monthPages = getMonthPages(sessionList);
-  const rhythm = getMonthPace(monthPages);
-  const streak = getStreak(sessionList);
+  // Metrics — passa a timezone do profile pra "hoje" ser consistente entre
+  // servidor (Vercel/UTC), cliente e Supabase. Sem isso, o user em SP vê
+  // "hoje" diferente quando o request roda em UTC durante a madrugada.
+  const tzOpts = { timezone: profile?.timezone };
+  const todayPages = getTodayPages(sessionList, tzOpts);
+  const monthPages = getMonthPages(sessionList, tzOpts);
+  const rhythm = getMonthPace(monthPages, tzOpts);
+  const streak = getStreak(sessionList, freezeDates, tzOpts);
 
   // Insights & Recommendations
   const userInsights = getAllInsights(sessionList || []);
@@ -99,6 +112,13 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Streak Freeze: salva o streak se foi quebrado ontem */}
+        <StreakFreezePanel
+          sessions={sessionList}
+          freezeDates={freezeDates}
+          availableFreezes={availableFreezes.length}
+        />
 
         {/* Streak At Risk Banner */}
         {todayPages === 0 && streak > 0 && (

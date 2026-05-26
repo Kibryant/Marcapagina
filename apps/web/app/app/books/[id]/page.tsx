@@ -18,6 +18,7 @@ import {
 } from '@marcapagina/data';
 import {
   type Book as BookType,
+  calculateBookEta,
   cn,
   getStreak,
   type Highlight,
@@ -27,10 +28,12 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   BookOpen,
+  BookX,
   Calendar,
   ChevronLeft,
   Pencil,
   Quote,
+  RotateCcw,
   Share2,
   Tag,
   Trash2,
@@ -41,6 +44,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
+import { BookEtaCard } from '@/components/book-eta';
 import { HighlightSharingCard } from '@/components/highlight-sharing-card';
 import { SharingCard } from '@/components/sharing-card';
 import { StarRating } from '@/components/star-rating';
@@ -228,6 +232,42 @@ export default function BookDetailsPage() {
       toast({
         title: 'Bora!',
         description: "Livro movido para 'Lendo'!",
+        variant: 'success',
+      });
+      fetchData();
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleAbandonBook = async () => {
+    try {
+      await updateBook(supabase, id, { status: 'dnf' });
+      toast({
+        title: 'Sem culpa.',
+        description: 'Livro movido para "Abandonados".',
+        variant: 'success',
+      });
+      fetchData();
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: err instanceof Error ? err.message : 'Erro inesperado',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleResumeReading = async () => {
+    try {
+      await updateBook(supabase, id, { status: 'reading' });
+      toast({
+        title: 'De volta!',
+        description: 'Livro movido para "Lendo".',
         variant: 'success',
       });
       fetchData();
@@ -520,7 +560,8 @@ export default function BookDetailsPage() {
                         'bg-success/10 text-success',
                       book.status === 'wishlist' &&
                         'bg-purple-500/10 text-purple-500',
-                      book.status === 'next' && 'bg-sky-500/10 text-sky-500'
+                      book.status === 'next' && 'bg-sky-500/10 text-sky-500',
+                      book.status === 'dnf' && 'bg-muted text-muted-foreground'
                     )}
                   >
                     {book.status === 'reading'
@@ -529,7 +570,9 @@ export default function BookDetailsPage() {
                         ? 'Finalizado'
                         : book.status === 'wishlist'
                           ? 'Lista de Desejos'
-                          : 'Próximo'}
+                          : book.status === 'dnf'
+                            ? 'Abandonado'
+                            : 'Próximo'}
                   </div>
                   {(book.status === 'wishlist' || book.status === 'next') && (
                     <Button
@@ -541,9 +584,18 @@ export default function BookDetailsPage() {
                       Começar a Ler
                     </Button>
                   )}
-                  {book.status !== 'finished' &&
-                    book.status !== 'wishlist' &&
-                    book.status !== 'next' && (
+                  {book.status === 'dnf' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs border-primary/50 text-primary hover:bg-primary/10 hover:text-primary"
+                      onClick={handleResumeReading}
+                    >
+                      <RotateCcw className="h-3.5 w-3.5 mr-1" /> Retomar Leitura
+                    </Button>
+                  )}
+                  {book.status === 'reading' && (
+                    <>
                       <Button
                         variant="outline"
                         size="sm"
@@ -552,7 +604,16 @@ export default function BookDetailsPage() {
                       >
                         Finalizar Livro
                       </Button>
-                    )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={handleAbandonBook}
+                      >
+                        <BookX className="h-3.5 w-3.5 mr-1" /> Abandonar
+                      </Button>
+                    </>
+                  )}
 
                   <SharingCard
                     book={book}
@@ -599,7 +660,9 @@ export default function BookDetailsPage() {
                 </div>
               </div>
 
-              {(book.status === 'reading' || book.status === 'finished') && (
+              {(book.status === 'reading' ||
+                book.status === 'finished' ||
+                book.status === 'dnf') && (
                 <div className="space-y-3 pt-6 p-6 rounded-2xl border bg-surface shadow-sm">
                   <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-muted-foreground">
                     <span>Progresso da Leitura</span>
@@ -609,7 +672,11 @@ export default function BookDetailsPage() {
                     className="h-6"
                     value={progress}
                     indicatorClassName={
-                      book.status === 'finished' ? 'bg-success' : 'bg-primary'
+                      book.status === 'finished'
+                        ? 'bg-success'
+                        : book.status === 'dnf'
+                          ? 'bg-muted-foreground'
+                          : 'bg-primary'
                     }
                   />
                   <div className="text-xs text-muted-foreground flex justify-between items-center">
@@ -617,6 +684,16 @@ export default function BookDetailsPage() {
                     <span>Total {book.total_pages} páginas</span>
                   </div>
                 </div>
+              )}
+
+              {book.status === 'reading' && (
+                <BookEtaCard
+                  eta={calculateBookEta(
+                    sessions,
+                    book.current_page,
+                    book.total_pages
+                  )}
+                />
               )}
 
               {book.status === 'finished' && (

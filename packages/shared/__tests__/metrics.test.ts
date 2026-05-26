@@ -143,6 +143,80 @@ describe('getStreak', () => {
     ];
     expect(getStreak(sessions)).toBe(2);
   });
+
+  it('counts a freeze-covered day as part of the streak', () => {
+    // Read today and day-before-yesterday, freeze covers yesterday.
+    const sessions = [session('2026-03-20', 10), session('2026-03-18', 10)];
+    expect(getStreak(sessions, ['2026-03-19'])).toBe(3);
+  });
+
+  it('uses freeze to start streak from yesterday when today has no reading', () => {
+    const sessions = [session('2026-03-18', 10)];
+    // Freeze covers yesterday (19); today (20) has no read → start from yesterday.
+    expect(getStreak(sessions, ['2026-03-19'])).toBe(2);
+  });
+
+  it('does not bridge a multi-day gap with a single freeze', () => {
+    // Gap is 2 days (18 and 17 missing), freeze only covers 18.
+    const sessions = [
+      session('2026-03-20', 10),
+      session('2026-03-19', 10),
+      session('2026-03-16', 10),
+    ];
+    expect(getStreak(sessions, ['2026-03-18'])).toBe(3);
+  });
+
+  it('returns 0 when only freezes exist but no recent ones', () => {
+    expect(getStreak([], ['2026-02-01'])).toBe(0);
+  });
+
+  it('respects the timezone option (still "today" in São Paulo at UTC midnight)', () => {
+    // FAKE_NOW = 2026-03-20T12:00:00Z — already 09:00 in São Paulo (UTC-3),
+    // so today === 2026-03-20 there too. Use a more telling reference:
+    // 2026-03-21T01:00:00Z = 22:00 São Paulo on 2026-03-20.
+    const refNow = new Date('2026-03-21T01:00:00.000Z');
+    const sessions = [session('2026-03-20', 10)];
+    // Without timezone, process TZ (vitest uses UTC by default in CI) →
+    // "today" is 2026-03-21, streak === 0.
+    // With São Paulo, "today" is 2026-03-20, streak === 1.
+    expect(
+      getStreak(sessions, [], { now: refNow, timezone: 'America/Sao_Paulo' })
+    ).toBe(1);
+  });
+});
+
+// ─── timezone-aware helpers ──────────────────────────────────────────────────
+
+describe('timezone-aware helpers', () => {
+  it('getTodayPages picks the right day in the user timezone', () => {
+    // 02:00 UTC on the 21st = 23:00 on the 20th in São Paulo.
+    const refNow = new Date('2026-03-21T02:00:00.000Z');
+    const sessions = [session('2026-03-20', 10), session('2026-03-21', 99)];
+    expect(
+      getTodayPages(sessions, { now: refNow, timezone: 'America/Sao_Paulo' })
+    ).toBe(10);
+  });
+
+  it('getMonthPages picks the right month in the user timezone', () => {
+    // 01:00 UTC on April 1 = 22:00 March 31 in São Paulo.
+    const refNow = new Date('2026-04-01T01:00:00.000Z');
+    const sessions = [
+      session('2026-03-15', 50),
+      session('2026-03-31', 20),
+      session('2026-04-01', 999), // ainda não é abril em SP
+    ];
+    expect(
+      getMonthPages(sessions, { now: refNow, timezone: 'America/Sao_Paulo' })
+    ).toBe(70);
+  });
+
+  it('getMonthPace divides by day-of-month in the chosen timezone', () => {
+    // 02:00 UTC April 1 = 23:00 March 31 in São Paulo (day 31).
+    const refNow = new Date('2026-04-01T02:00:00.000Z');
+    expect(
+      getMonthPace(310, { now: refNow, timezone: 'America/Sao_Paulo' })
+    ).toBe(10);
+  });
 });
 
 // ─── getDailyGoalProgress ────────────────────────────────────────────────────

@@ -21,8 +21,9 @@ export default async function PublicProfilePage({
   }
 
   const sessionList = await listSessions(supabase, profile.id);
-  const monthPages = getMonthPages(sessionList);
-  const streak = getStreak(sessionList);
+  const tzOpts = { timezone: profile.timezone };
+  const monthPages = getMonthPages(sessionList, tzOpts);
+  const streak = getStreak(sessionList, [], tzOpts);
 
   return (
     <AppShell hideNav>

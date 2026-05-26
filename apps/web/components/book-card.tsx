@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 
-type BookStatus = 'reading' | 'paused' | 'finished' | 'wishlist' | 'next';
+type BookStatus = 'reading' | 'dnf' | 'finished' | 'wishlist' | 'next';
 
 interface BookCardProps {
   id: string;
@@ -34,7 +34,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 const STATUS_CONFIG: Record<BookStatus, { label: string; className: string }> =
   {
     reading: { label: 'Lendo', className: 'bg-primary/10 text-primary' },
-    paused: { label: 'Pausado', className: 'bg-warning/10 text-warning' },
+    dnf: {
+      label: 'Abandonado',
+      className: 'bg-muted text-muted-foreground',
+    },
     finished: { label: 'Finalizado', className: 'bg-success/10 text-success' },
     wishlist: {
       label: 'Lista de Desejos',
@@ -58,7 +61,7 @@ export function BookCard({
       ? Math.min(100, Math.round((current_page / total_pages) * 100))
       : 0;
   const showProgress =
-    status === 'reading' || status === 'paused' || status === 'finished';
+    status === 'reading' || status === 'dnf' || status === 'finished';
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.reading;
 
   return (
@@ -111,7 +114,11 @@ export function BookCard({
                   <ProgressBar
                     value={progress}
                     indicatorClassName={
-                      status === 'finished' ? 'bg-success' : 'bg-primary'
+                      status === 'finished'
+                        ? 'bg-success'
+                        : status === 'dnf'
+                          ? 'bg-muted-foreground'
+                          : 'bg-primary'
                     }
                   />
                   <div className="text-[11px] text-muted-foreground text-right font-medium">

@@ -28,6 +28,7 @@ interface GoogleBooksResult {
   author: string;
   pageCount: number;
   coverUrl: string;
+  source?: 'google' | 'openlibrary';
 }
 
 export default function NewBookPage() {
@@ -65,30 +66,13 @@ export default function NewBookPage() {
       setIsSearching(true);
       try {
         const res = await fetch(
-          `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&maxResults=5`
+          `/api/books/search?q=${encodeURIComponent(title)}`
         );
-        const data = await res.json();
-        const results: GoogleBooksResult[] = (data.items || []).map(
-          (item: {
-            volumeInfo: {
-              title?: string;
-              authors?: string[];
-              pageCount?: number;
-              imageLinks?: { thumbnail?: string };
-            };
-          }) => ({
-            title: item.volumeInfo.title || '',
-            author: item.volumeInfo.authors?.[0] || '',
-            pageCount: item.volumeInfo.pageCount || 0,
-            coverUrl:
-              item.volumeInfo.imageLinks?.thumbnail?.replace(
-                'http://',
-                'https://'
-              ) || '',
-          })
-        );
-        setSearchResults(results);
-        setShowDropdown(results.length > 0);
+        if (res.ok) {
+          const data = (await res.json()) as { results: GoogleBooksResult[] };
+          setSearchResults(data.results ?? []);
+          setShowDropdown((data.results ?? []).length > 0);
+        }
       } catch {
         // silently fail — user can fill manually
       }
@@ -257,7 +241,8 @@ export default function NewBookPage() {
                   )}
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Digite para buscar automaticamente no Google Books.
+                  Digite para buscar automaticamente. Combinamos Google Books e
+                  Open Library.
                 </p>
               </div>
 

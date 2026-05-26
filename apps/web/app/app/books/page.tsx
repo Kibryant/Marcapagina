@@ -3,6 +3,7 @@ import {
   BookMarked,
   BookOpen,
   BookPlus,
+  BookX,
   CheckCircle2,
   Heart,
   Plus,
@@ -31,6 +32,7 @@ export default async function BooksPage() {
     next: books?.filter((b) => b.status === 'next').length ?? 0,
     wishlist: books?.filter((b) => b.status === 'wishlist').length ?? 0,
     finished: books?.filter((b) => b.status === 'finished').length ?? 0,
+    dnf: books?.filter((b) => b.status === 'dnf').length ?? 0,
     total: books?.length ?? 0,
   };
 
@@ -83,6 +85,11 @@ export default async function BooksPage() {
               <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-success/10 text-success">
                 <CheckCircle2 className="h-3 w-3" /> {counts.finished}{' '}
                 finalizados
+              </span>
+            )}
+            {counts.dnf > 0 && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-muted text-muted-foreground">
+                <BookX className="h-3 w-3" /> {counts.dnf} abandonados
               </span>
             )}
           </div>

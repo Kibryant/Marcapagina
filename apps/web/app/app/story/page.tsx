@@ -1,11 +1,21 @@
 import {
+  getProfile,
   listAchievements,
   listBookStatuses,
+  listConsumedFreezeDates,
   listSessions,
   listUserAchievements,
 } from '@marcapagina/data';
 import { generateStoryData, getStreak } from '@marcapagina/shared';
-import { BookOpen, Calendar, Clock, Flame, Target } from 'lucide-react';
+import {
+  BookOpen,
+  Calendar,
+  Clock,
+  Flame,
+  Sparkles,
+  Target,
+} from 'lucide-react';
+import Link from 'next/link';
 import { AchievementCard } from '@/components/achievement-card';
 import { AppShell } from '@/components/app-shell';
 import { ReadingCharts } from '@/components/reading-charts';
@@ -21,20 +31,30 @@ export default async function StoryPage() {
   } = await supabase.auth.getUser();
   const userId = user?.id ?? '';
 
-  const [sessionList, bookStatuses, achievementList, unlockedAchievements] =
-    await Promise.all([
-      listSessions(supabase, userId),
-      listBookStatuses(supabase, userId),
-      listAchievements(supabase),
-      listUserAchievements(supabase, userId),
-    ]);
+  const [
+    profile,
+    sessionList,
+    bookStatuses,
+    achievementList,
+    unlockedAchievements,
+    freezeDates,
+  ] = await Promise.all([
+    getProfile(supabase, userId),
+    listSessions(supabase, userId),
+    listBookStatuses(supabase, userId),
+    listAchievements(supabase),
+    listUserAchievements(supabase, userId),
+    listConsumedFreezeDates(supabase, userId),
+  ]);
 
   const unlockedMap = new Map(
     unlockedAchievements.map((ua) => [ua.achievement_id, ua.unlocked_at])
   );
 
   const storyData = generateStoryData(sessionList, bookStatuses);
-  const streak = getStreak(sessionList);
+  const streak = getStreak(sessionList, freezeDates, {
+    timezone: profile?.timezone,
+  });
 
   const currentMonthLabel = new Intl.DateTimeFormat('pt-BR', {
     month: 'long',
@@ -42,6 +62,7 @@ export default async function StoryPage() {
   }).format(new Date());
 
   const unlockedCount = unlockedMap.size;
+  const currentYear = new Date().getFullYear();
 
   return (
     <AppShell>
@@ -53,6 +74,27 @@ export default async function StoryPage() {
             {currentMonthLabel} · Relembre sua jornada literária.
           </p>
         </div>
+
+        {/* Year in Books CTA */}
+        <Link
+          href={`/app/story/year/${currentYear}`}
+          className="group flex items-center gap-4 p-5 rounded-2xl border border-primary/30 bg-linear-to-br from-primary/10 to-primary/5 hover:border-primary/50 transition-all"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shrink-0 group-hover:scale-110 transition-transform">
+            <Sparkles className="h-6 w-6" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-black uppercase tracking-widest text-primary">
+              Retrospectiva {currentYear}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Veja o ano inteiro em um cartão. Compartilhável.
+            </p>
+          </div>
+          <span className="text-xs font-bold text-primary shrink-0">
+            Abrir →
+          </span>
+        </Link>
 
         {/* Section 1: Este Mês */}
         <section className="space-y-4">
