@@ -10,8 +10,14 @@
 //     título+autor e preenchendo pageCount/cover quando uma fonte falha.
 
 import { NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export const revalidate = 3600;
+
+// 30 buscas por minuto por IP. Cobre digitação em autocomplete (debounce
+// 400ms = no máximo ~2,5 req/s) sem incomodar, mas barra scripts.
+const RATE_LIMIT_PER_IP = 30;
+const RATE_LIMIT_WINDOW_MS = 60_000;
 
 export interface BookSearchResult {
   title: string;
@@ -88,6 +94,28 @@ function normalizeKey(title: string, author: string): string {
 }
 
 export async function GET(request: Request) {
+  // Rate limit antes de qualquer fetch externo.
+  const ip = getClientIp(request);
+  const rl = checkRateLimit({
+    key: `books-search:${ip}`,
+    limit: RATE_LIMIT_PER_IP,
+    windowMs: RATE_LIMIT_WINDOW_MS,
+  });
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: 'Muitas buscas, tente em alguns segundos.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(rl.retryAfterSeconds),
+          'X-RateLimit-Limit': String(RATE_LIMIT_PER_IP),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(Math.floor(rl.resetAt / 1000)),
+        },
+      }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const q = searchParams.get('q')?.trim();
 
@@ -128,5 +156,14 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ results: merged.slice(0, 6) });
+  return NextResponse.json(
+    { results: merged.slice(0, 6) },
+    {
+      headers: {
+        'X-RateLimit-Limit': String(RATE_LIMIT_PER_IP),
+        'X-RateLimit-Remaining': String(rl.remaining),
+        'X-RateLimit-Reset': String(Math.floor(rl.resetAt / 1000)),
+      },
+    }
+  );
 }

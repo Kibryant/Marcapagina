@@ -4,6 +4,7 @@ import { ArrowRight, BookOpen, ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { GoogleSignInButton } from '@/components/google-sign-in-button';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -85,6 +86,17 @@ export default function LoginPage() {
           </div>
         </CardHeader>
 
+        <CardContent className="pb-0 space-y-5">
+          <GoogleSignInButton />
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border/70" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              ou com e-mail
+            </span>
+            <div className="h-px flex-1 bg-border/70" />
+          </div>
+        </CardContent>
+
         <form onSubmit={handleLogin}>
           <CardContent className="grid gap-5">
             <div className="grid gap-2">
@@ -105,13 +117,21 @@ export default function LoginPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label
-                htmlFor="password"
-                title="password"
-                className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1"
-              >
-                Senha
-              </Label>
+              <div className="flex items-center justify-between ml-1">
+                <Label
+                  htmlFor="password"
+                  title="password"
+                  className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
+                >
+                  Senha
+                </Label>
+                <Link
+                  href="/recuperar-senha"
+                  className="text-[11px] font-bold text-primary hover:underline underline-offset-2"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
               <div className="relative">
                 <Input
                   id="password"

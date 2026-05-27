@@ -11,6 +11,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { GoogleSignInButton } from '@/components/google-sign-in-button';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -123,6 +124,17 @@ export default function SignupPage() {
             </CardDescription>
           </div>
         </CardHeader>
+
+        <CardContent className="pb-0 space-y-5">
+          <GoogleSignInButton label="Criar conta com Google" />
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border/70" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              ou com e-mail
+            </span>
+            <div className="h-px flex-1 bg-border/70" />
+          </div>
+        </CardContent>
 
         <form onSubmit={handleSignup}>
           <CardContent className="grid gap-5">

@@ -1,28 +1,36 @@
 import {
   ArrowRight,
   BookOpen,
-  CheckCircle2,
-  Quote,
+  Code2,
+  Heart,
+  MessageCircle,
   Shield,
   Sparkles,
-  Star,
   Timer,
   TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { createClient } from '@/lib/supabase/server';
 
-export default function Home() {
+export default async function Home() {
+  // Já logado → vai direto pro app, não força ver a landing.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) redirect('/app');
+
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 overflow-x-hidden">
-      {/* Background Decorators */}
       <div className="fixed inset-0 z-[-1] pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] opacity-70 animate-pulse duration-1000" />
         <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-sky-500/20 rounded-full blur-[128px] opacity-50" />
       </div>
 
-      {/* Topbar Desktop */}
+      {/* Topbar */}
       <header className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-xl hidden md:block">
         <div className="container mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
           <div className="flex items-center gap-2 group cursor-pointer">
@@ -53,7 +61,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Topbar Mobile */}
       <header className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/50 backdrop-blur-2xl md:hidden transition-all duration-300">
         <div className="container mx-auto flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-2 group transition-opacity active:opacity-80">
@@ -72,11 +79,11 @@ export default function Home() {
       </header>
 
       <main className="pt-32 pb-20 relative">
-        {/* Hero Section */}
+        {/* Hero */}
         <section className="container mx-auto max-w-5xl px-4 text-center space-y-10">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-5 py-2 text-xs font-black uppercase tracking-widest text-primary animate-in fade-in slide-in-from-bottom-4 duration-1000 shadow-[0_0_15px_rgba(var(--primary),0.2)] backdrop-blur-md">
             <Sparkles className="h-4 w-4" />
-            <span>Seu próximo capítulo começa aqui</span>
+            <span>Beta aberto · Português · Grátis pra começar</span>
           </div>
 
           <h1 className="mx-auto max-w-4xl text-5xl font-black tracking-tighter sm:text-6xl lg:text-8xl leading-[1.05] animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150">
@@ -115,21 +122,17 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* Interactive Mockup (Glassmorphism Dashboard) */}
+          {/* Mockup do dashboard — ilustrativo */}
           <div className="relative mt-24 mx-auto max-w-4xl animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-700">
-            {/* Glow Behind Mockup */}
             <div className="absolute -inset-1 rounded-[2.5rem] bg-linear-to-tr from-primary/30 via-purple-500/20 to-sky-500/30 opacity-70 blur-3xl animate-pulse" />
 
-            {/* Fake Browser/App Window */}
             <div className="relative rounded-3xl border border-white/10 bg-background/40 p-4 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10 sm:p-6 overflow-hidden">
-              {/* Window Controls */}
               <div className="flex gap-2 mb-6 px-2">
                 <div className="h-3 w-3 rounded-full bg-red-400/50" />
                 <div className="h-3 w-3 rounded-full bg-amber-400/50" />
                 <div className="h-3 w-3 rounded-full bg-green-400/50" />
               </div>
 
-              {/* Inside Dashboard Fake */}
               <div className="grid grid-cols-1 md:grid-cols-[1fr_250px] gap-6 text-left">
                 <div className="space-y-6">
                   <div>
@@ -160,7 +163,6 @@ export default function Home() {
                     ))}
                   </div>
 
-                  {/* Fake Book Card */}
                   <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex gap-4 items-center">
                     <div className="w-12 h-16 rounded shadow-md bg-linear-to-br from-indigo-500 to-purple-600 shrink-0" />
                     <div className="flex-1 space-y-2">
@@ -179,15 +181,14 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Right Sidebar Fake */}
                 <div className="hidden md:block space-y-4">
                   <div className="p-4 rounded-xl border border-border/40 bg-background/60 space-y-3">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase text-primary">
                       <Sparkles className="h-3 w-3" /> Insights
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Você lê 30% mais rápido nas noites de Quarta-feira.
-                      Continue o ótimo ritmo!
+                      Você lê 30% mais rápido nas noites de quarta. Continue o
+                      ótimo ritmo!
                     </p>
                   </div>
                   <div className="p-4 rounded-xl border border-border/40 bg-background/60 space-y-3">
@@ -204,14 +205,14 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Features Row (Cards with Hover effects) */}
+        {/* Features */}
         <section className="container mx-auto max-w-5xl px-4 mt-40">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-3xl font-black sm:text-4xl">
-              Ferramentas para quem leva a sério.
+              Ferramentas pra quem leva a sério.
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Tudo que você precisa para metrificar, visualizar e se apaixonar
+              Tudo que você precisa pra metrificar, visualizar e se apaixonar
               novamente pela leitura constante.
             </p>
           </div>
@@ -219,29 +220,29 @@ export default function Home() {
           <div className="grid gap-6 sm:grid-cols-3">
             {[
               {
-                title: 'Foco & Tempo',
+                title: 'Foco & tempo',
                 icon: Timer,
                 color: 'text-amber-500',
                 bg: 'bg-amber-500/10',
                 border: 'hover:border-amber-500/50 hover:shadow-amber-500/20',
-                desc: 'Use o timer integrado para focar na leitura e registrar exatamente quanto tempo você dedica aos livros.',
+                desc: 'Use o timer integrado pra focar na leitura e registrar exatamente quanto tempo você dedica aos livros.',
               },
               {
-                title: 'Métricas Visíveis',
+                title: 'Métricas visíveis',
                 icon: TrendingUp,
                 color: 'text-primary',
                 bg: 'bg-primary/10',
                 border: 'hover:border-primary/50 hover:shadow-primary/20',
-                desc: 'Acompanhe seu ritmo de leitura diário e mensal com gráficos limpos e inteligentes.',
+                desc: 'Acompanhe seu ritmo de leitura diário e mensal com gráficos limpos. Veja sua retrospectiva anual em um cartão compartilhável.',
               },
               {
-                title: 'Seus Dados',
+                title: 'Seus dados',
                 icon: Shield,
                 color: 'text-emerald-500',
                 bg: 'bg-emerald-500/10',
                 border:
                   'hover:border-emerald-500/50 hover:shadow-emerald-500/20',
-                desc: 'Exporte todo o seu histórico a qualquer momento. Seus dados, sua privacidade, seu total controle.',
+                desc: 'Cada usuário só enxerga os próprios dados (Row Level Security do Supabase). Sem rastreamento de terceiros.',
               },
             ].map((Feature) => (
               <div
@@ -267,54 +268,66 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Testimonials (Social Proof) */}
+        {/* Beta transparency — substitui testemunhos falsos */}
         <section className="container mx-auto max-w-5xl px-4 mt-40">
           <div className="rounded-3xl border border-primary/20 bg-primary/5 p-8 sm:p-12 relative overflow-hidden backdrop-blur-sm">
-            <Quote className="absolute -top-4 -right-4 h-32 w-32 text-primary/5 -rotate-12" />
             <div className="relative grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl font-black mb-4">
-                  Leia mais, esqueça menos.
-                </h2>
-                <p className="text-muted-foreground text-lg mb-8">
-                  Junte-se a leitores que transformaram o hábito de ler em uma
-                  atividade metrificada e divertida.
-                </p>
-                <div className="flex gap-2">
-                  {[0, 1, 2, 3, 4].map((position) => (
-                    <Star
-                      key={position}
-                      className="h-5 w-5 fill-amber-400 text-amber-400"
-                    />
-                  ))}
-                </div>
-                <p className="font-bold mt-2">
-                  Avaliação 5/5 de nossos usuários
-                </p>
-              </div>
               <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/40 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
+                  <Heart className="h-3 w-3" />
+                  <span>Honestidade radical</span>
+                </div>
+                <h2 className="text-3xl font-black">
+                  Ainda é dia 1. Mas tem coisa boa.
+                </h2>
+                <p className="text-muted-foreground text-base">
+                  Marcapágina é um projeto novo, em beta aberto. Sem testemunhos
+                  inventados, sem prova social esticada. O que tem agora já
+                  funciona e é grátis — e os próximos passos dependem de quem
+                  topar usar e dar feedback.
+                </p>
+                <Button asChild className="rounded-full">
+                  <Link href="/signup">
+                    Quero testar <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 {[
                   {
-                    name: 'Mariana Souza',
-                    review:
-                      'Finalmente algo que me motiva a ler todos os dias sem me sentir pressionada. As metas dinâmicas são geniais.',
+                    icon: BookOpen,
+                    label: 'Pronto pra usar',
+                    desc: 'Estante, log com timer, gamificação, metas, retrospectiva anual.',
                   },
                   {
-                    name: 'Lucas Ferreira',
-                    review:
-                      "Eu amo os gráficos mensais. Ver meu 'streak' crescendo me força a abrir pelo menos 10 páginas antes de dormir.",
+                    icon: Code2,
+                    label: 'Open source-friendly',
+                    desc: 'Stack moderna: Next.js, Supabase, Postgres. Você verá os logs do seu próprio uso.',
                   },
-                ].map((t) => (
+                  {
+                    icon: Shield,
+                    label: 'Sem ads, sem tracker',
+                    desc: 'Não vendemos seus dados. RLS no banco, princípio do menor privilégio.',
+                  },
+                  {
+                    icon: MessageCircle,
+                    label: 'Feedback direto',
+                    desc: 'Mande sugestão, bug ou crítica — leitura humana, resposta sempre.',
+                  },
+                ].map((card) => (
                   <div
-                    key={t.name}
-                    className="p-5 rounded-2xl bg-background shadow-md border border-border/40"
+                    key={card.label}
+                    className="p-4 rounded-2xl bg-background shadow-sm border border-border/40 space-y-2"
                   >
-                    <p className="text-sm italic mb-4">
-                      &quot;{t.review}&quot;
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <card.icon className="h-4 w-4" />
+                    </div>
+                    <p className="text-xs font-black uppercase tracking-widest">
+                      {card.label}
                     </p>
-                    <p className="text-xs font-bold flex items-center gap-1.5">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />{' '}
-                      {t.name}
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      {card.desc}
                     </p>
                   </div>
                 ))}
@@ -324,7 +337,6 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-border/40 bg-background py-16">
         <div className="container mx-auto max-w-5xl px-4 flex flex-col items-center justify-between gap-6 sm:flex-row">
           <div className="flex items-center gap-2">
@@ -332,9 +344,9 @@ export default function Home() {
             <span className="font-black tracking-tighter">Marcapágina</span>
           </div>
           <p className="text-sm text-muted-foreground font-medium">
-            © 2026 Marcapágina. Feito para quem ama ler.
+            © {new Date().getFullYear()} Marcapágina. Feito pra quem ama ler.
           </p>
-          <div className="flex items-center gap-6 text-sm font-bold text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-bold text-muted-foreground">
             <Link
               href="/login"
               className="hover:text-foreground transition-colors"
@@ -345,7 +357,19 @@ export default function Home() {
               href="/signup"
               className="hover:text-primary transition-colors"
             >
-              Criar Conta
+              Criar conta
+            </Link>
+            <Link
+              href="/termos"
+              className="hover:text-foreground transition-colors"
+            >
+              Termos
+            </Link>
+            <Link
+              href="/privacidade"
+              className="hover:text-foreground transition-colors"
+            >
+              Privacidade
             </Link>
           </div>
         </div>

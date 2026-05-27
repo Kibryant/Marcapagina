@@ -7,32 +7,29 @@ const inter = Inter({
   subsets: ['latin'],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://marcapagina.app';
+const TITLE = 'Marcapágina · seu hábito de leitura em métricas';
+const DESCRIPTION =
+  'Registre sessões com timer, acompanhe ritmo e streak, finalize livros e veja sua retrospectiva anual. Em português.';
+
 export const metadata: Metadata = {
-  title: 'Marcapágina',
-  description:
-    'Acompanhe seu progresso, registre sessões com timer e descubra estatísticas surpreendentes sobre seu hábito de leitura.',
-  keywords: [
-    'leitura',
-    'timer',
-    'estatísticas',
-    'hábito',
-    'leitura',
-    'timer',
-    'estatísticas',
-    'hábito',
-    'leitura',
-    'timer',
-    'estatísticas',
-    'hábito',
-  ],
-  authors: [{ name: 'Arthur' }],
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  keywords: ['leitura', 'livros', 'hábito', 'timer', 'streak', 'goodreads'],
+  authors: [{ name: 'Marcapágina' }],
   openGraph: {
-    title: 'Marcapágina',
-    description:
-      'Acompanhe seu progresso, registre sessões com timer e descubra estatísticas surpreendentes sobre seu hábito de leitura.',
+    title: TITLE,
+    description: DESCRIPTION,
     type: 'website',
-    locale: 'pt-BR',
+    locale: 'pt_BR',
     siteName: 'Marcapágina',
+    url: SITE_URL,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
   },
 };
 
